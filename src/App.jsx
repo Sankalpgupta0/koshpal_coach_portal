@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Sessions from './pages/Sessions'
 import Clients from './pages/Clients'
+import Calendar from './pages/Calendar'
 import Availability from './pages/Availability'
 import Payments from './pages/Payments'
 import Reports from './pages/Reports'
@@ -18,6 +19,13 @@ function App() {
       <Routes>
         {/* Login Route */}
         <Route path="/login" element={<Login />} />
+        
+        {/* Calendar - Standalone (manages its own sidebar) */}
+        <Route path="/calendar" element={
+          <ProtectedRoute>
+            <Calendar />
+          </ProtectedRoute>
+        } />
         
         {/* Main Layout Routes - Protected */}
         <Route element={

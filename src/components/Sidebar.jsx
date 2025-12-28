@@ -3,6 +3,7 @@ import {
   Home,
   Users,
   Calendar,
+  CalendarCheck,
   DollarSign,
   Settings,
   X,
@@ -18,7 +19,8 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/', badge: null },
     { icon: Users, label: 'Clients', path: '/clients', badge: null },
-    { icon: Calendar, label: 'Availability', path: '/availability', badge: null },
+    { icon: Calendar, label: 'Calendar', path: '/calendar', badge: null },
+    { icon: CalendarCheck, label: 'Availability', path: '/availability', badge: null },
     { icon: DollarSign, label: 'Payments', path: '/payments', badge: null },
     { icon: Settings, label: 'Settings', path: '/settings', badge: null },
   ];

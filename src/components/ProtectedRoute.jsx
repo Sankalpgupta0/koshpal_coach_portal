@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { getCurrentUser } from '../api/auth';
+import { getCurrentUser, logout } from '../api/auth';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -28,7 +28,19 @@ function ProtectedRoute({ children }) {
           setIsAuthenticated(false);
         }
       } catch (error) {
-        // If API call fails (401), user is not authenticated
+        // If API call fails (401/403), user is not authenticated
+        // Clear any stale data
+        localStorage.removeItem('user');
+        
+        // If it's a 403 (Forbidden), also clear server-side cookies
+        if (error.response?.status === 403) {
+          try {
+            await logout(); // This will clear httpOnly cookies
+          } catch (logoutError) {
+            console.log('Logout failed, but continuing with redirect');
+          }
+        }
+        
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);

@@ -1,4 +1,4 @@
-import { axiosInstance } from './axiosInstance';
+import { axiosInstance } from './axiosInstance.mjs';
 
 /**
  * Create availability slots
@@ -77,6 +77,26 @@ export const updateConsultationStatus = async (consultationId, status) => {
 };
 
 /**
+ * Save weekly availability
+ * POST /api/v1/coach/slots
+ */
+export const saveWeeklyAvailability = async (weeklyData) => {
+  const response = await axiosInstance.post('/coach/slots', weeklyData);
+  return response.data;
+};
+
+/**
+ * Get weekly schedule
+ * GET /api/v1/coach/slots/weekly
+ */
+export const getWeeklySchedule = async (weeks = 1) => {
+  const response = await axiosInstance.get('/coach/slots/weekly', {
+    params: { weeks },
+  });
+  return response.data;
+};
+
+/**
  * Delete a slot
  * DELETE /api/v1/coach/slots/:id
  */
@@ -136,5 +156,25 @@ export const generateInvoice = async (invoiceData) => {
  */
 export const getInvoices = async (params = {}) => {
   const response = await axiosInstance.get('/coach/invoices', { params });
+  return response.data;
+};
+
+/**
+ * Get coach profile
+ * GET /api/v1/coach/profile
+ */
+export const getCoachProfile = async () => {
+  const response = await axiosInstance.get('/coach/profile');
+  return response.data;
+};
+
+/**
+ * Update coach timezone
+ * PATCH /api/v1/coach/profile/timezone
+ */
+export const updateCoachTimezone = async (timezone) => {
+  const response = await axiosInstance.patch('/coach/profile/timezone', {
+    timezone,
+  });
   return response.data;
 };

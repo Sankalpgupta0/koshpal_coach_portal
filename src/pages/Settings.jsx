@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, User, LogOut, Moon, Sun, Menu } from 'lucide-react';
+import { Settings as SettingsIcon, User, LogOut, Moon, Sun, Menu, Clock } from 'lucide-react';
 import { logout, getMyProfile, updateMyProfile } from '../api';
+import { getCoachProfile, updateCoachTimezone } from '../api/coach';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -25,6 +26,8 @@ export default function Settings() {
     email: '',
     phone: '',
   });
+  const [timezone, setTimezone] = useState('Asia/Kolkata');
+  const [originalTimezone, setOriginalTimezone] = useState('Asia/Kolkata');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -71,6 +74,16 @@ export default function Settings() {
         setFormData(fallbackData);
         setOriginalData(fallbackData);
       }
+
+      // Load coach profile for timezone
+      try {
+        const coachProfile = await getCoachProfile();
+        setTimezone(coachProfile.timezone || 'Asia/Kolkata');
+        setOriginalTimezone(coachProfile.timezone || 'Asia/Kolkata');
+      } catch (err) {
+        console.error('Error loading coach profile:', err);
+        // Keep default IST
+      }
     } catch (err) {
       console.error('Error loading profile:', err);
     } finally {
@@ -92,9 +105,23 @@ export default function Settings() {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleTimezoneChange = (e) => {
+    setTimezone(e.target.value);
+  };
+
+  const handleSaveTimezone = async () => {
+    try {
+      setSaving(true);
+      await updateCoachTimezone(timezone);
+      setOriginalTimezone(timezone);
+      // Could add a success message here
+    } catch (err) {
+      console.error('Error updating timezone:', err);
+      // Reset to original on error
+      setTimezone(originalTimezone);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSaveChanges = async () => {
@@ -120,6 +147,14 @@ export default function Settings() {
 
   const handleCancel = () => {
     setFormData(originalData);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const getInitials = (firstName, lastName) => {
@@ -365,6 +400,77 @@ export default function Settings() {
             )}
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
+        </div>
+      </div>
+
+      {/* Timezone Settings Card */}
+      <div
+        className="p-6 mt-6 rounded-lg sm:p-8"
+        style={{
+          backgroundColor: 'var(--color-bg-card)',
+          border: '1px solid var(--color-border-primary)',
+        }}
+      >
+        {/* Section Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <Clock className="w-6 h-6" style={{ color: 'var(--color-primary)' }} />
+          <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+            Timezone Settings
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            Set your timezone for scheduling availability. This affects when your slots appear to clients.
+          </p>
+
+          {/* Timezone Selector */}
+          <div>
+            <label
+              className="block mb-2 text-sm font-semibold"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              Timezone
+            </label>
+            <select
+              value={timezone}
+              onChange={handleTimezoneChange}
+              className="w-full px-4 py-3 transition-all border rounded-lg focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--color-input-bg)',
+                borderColor: 'var(--color-input-border)',
+                color: 'var(--color-input-text)',
+              }}
+            >
+              <option value="Asia/Kolkata">India Standard Time (IST) - Asia/Kolkata</option>
+              <option value="America/New_York">Eastern Time (ET) - America/New_York</option>
+              <option value="America/Chicago">Central Time (CT) - America/Chicago</option>
+              <option value="America/Denver">Mountain Time (MT) - America/Denver</option>
+              <option value="America/Los_Angeles">Pacific Time (PT) - America/Los_Angeles</option>
+              <option value="Europe/London">Greenwich Mean Time (GMT) - Europe/London</option>
+              <option value="Europe/Paris">Central European Time (CET) - Europe/Paris</option>
+              <option value="Asia/Tokyo">Japan Standard Time (JST) - Asia/Tokyo</option>
+              <option value="Australia/Sydney">Australian Eastern Time (AEDT) - Australia/Sydney</option>
+            </select>
+          </div>
+
+          {/* Save Timezone Button */}
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={handleSaveTimezone}
+              disabled={saving || timezone === originalTimezone}
+              className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-opacity rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+            >
+              {saving && (
+                <div
+                  className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin"
+                  style={{ borderColor: 'white', borderTopColor: 'transparent' }}
+                />
+              )}
+              Save Timezone
+            </button>
+          </div>
         </div>
       </div>
 

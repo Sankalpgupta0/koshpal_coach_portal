@@ -44,21 +44,22 @@ export default function Dashboard() {
       // Filter today's sessions
       const today = new Date().toISOString().split('T')[0];
       const todaySessions = allConsultations.filter(consultation => {
-        const sessionDate = new Date(consultation.slot.date).toISOString().split('T')[0];
+        if (!consultation || !consultation.date) return false;
+        const sessionDate = new Date(consultation.date).toISOString().split('T')[0];
         return sessionDate === today;
       });
 
       // Format sessions for display
       const formattedSessions = todaySessions.map(consultation => ({
         id: consultation.id,
-        startTime: formatTime(consultation.slot.startTime),
-        endTime: formatTime(consultation.slot.endTime),
-        clientName: `${consultation.employee.profile.firstName} ${consultation.employee.profile.lastName}`,
-        sessionType: consultation.employee.company.name,
-        badge: consultation.status === 'CONFIRMED' ? 'Confirmed' : 'Tentative',
+        startTime: formatTime(consultation.startTime),
+        endTime: formatTime(consultation.endTime),
+        clientName: consultation.booking?.employee?.fullName || 'Unknown Client',
+        sessionType: 'Consultation',
+        badge: consultation.booking?.status === 'CONFIRMED' ? 'Confirmed' : 'Tentative',
         isVirtual: true,
-        duration: calculateDuration(consultation.slot.startTime, consultation.slot.endTime),
-        meetingLink: consultation.meetingLink,
+        duration: calculateDuration(consultation.startTime, consultation.endTime),
+        meetingLink: consultation.booking?.meetingLink,
       }));
 
       setSessions(formattedSessions);
@@ -66,15 +67,16 @@ export default function Dashboard() {
       // Get upcoming sessions (next 7 days, excluding today)
       const upcomingFiltered = allConsultations
         .filter(consultation => {
-          const sessionDate = new Date(consultation.slot.date);
+          if (!consultation || !consultation.date) return false;
+          const sessionDate = new Date(consultation.date);
           const todayDate = new Date(today);
           return sessionDate > todayDate;
         })
         .slice(0, 3)
         .map(consultation => ({
           id: consultation.id,
-          name: `${consultation.employee.profile.firstName} ${consultation.employee.profile.lastName}`,
-          date: formatDate(consultation.slot.startTime),
+          name: consultation.booking?.employee?.fullName || 'Unknown Client',
+          date: formatDate(consultation.startTime),
         }));
 
       setUpcomingSessions(upcomingFiltered);

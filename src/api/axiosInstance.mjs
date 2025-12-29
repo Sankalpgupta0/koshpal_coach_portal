@@ -1,5 +1,19 @@
 import axios from 'axios';
 
+// Helper function to get CSRF token from cookie
+const getCsrfToken = () => {
+  const name = 'XSRF-TOKEN=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+  for (let cookie of cookieArray) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length);
+    }
+  }
+  return null;
+};
+
 // Rate limiting configuration
 let requestQueue = [];
 let isRefreshing = false;
@@ -16,21 +30,34 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor - no longer needed since tokens are in httpOnly cookies
+// Request interceptor - adds CSRF token to all non-GET requests
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Tokens are automatically sent via httpOnly cookies with withCredentials: true
+    console.log(`[Coach Portal API] ${config.method?.toUpperCase()} ${config.url}`);
+    // Add CSRF token for state-changing requests
+    if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
     return config;
   },
   (error) => {
+    console.error('[Coach Portal API] Request error:', error);
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling and token refresh
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[Coach Portal API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+    return response;
+  },
   async (error) => {
+    console.error(`[Coach Portal API] Response error for ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, error.response?.status, error.response?.data || error.message);
+    
     const originalRequest = error.config;
 
     // Log error details for debugging

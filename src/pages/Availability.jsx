@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Clock, Trash2, Calendar, Plus, Save, Menu } from 'lucide-react';
+import { Clock, Trash2, Calendar, Plus, Save, Menu, X } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { createSlots, getMySlots } from '../api';
+import { createSlots, getMySlots, deleteSlot, saveWeeklyAvailability, getWeeklySchedule } from '../api';
 
 
 export default function Availability() {
@@ -33,15 +33,14 @@ export default function Availability() {
     return time;
   };
 
-  // Calculate duration in hours
+  // Calculate duration in hours (must be exactly 1 hour per slot)
   const calculateDuration = (start, end) => {
     const [startH, startM] = start.split(':').map(Number);
     const [endH, endM] = end.split(':').map(Number);
     const startMinutes = startH * 60 + startM;
     const endMinutes = endH * 60 + endM;
     const diff = endMinutes - startMinutes;
-    const hours = diff / 60;
-    return hours;
+    return diff / 60; // Return hours
   };
 
   // Initialize default schedule
@@ -67,6 +66,8 @@ export default function Availability() {
   const [recurringSchedule, setRecurringSchedule] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [publishMessage, setPublishMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
@@ -79,45 +80,40 @@ export default function Availability() {
 
   const loadExistingSlots = async () => {
     try {
-      const slots = await getMySlots();
+      setLoading(true);
+      const weeklySchedule = await getWeeklySchedule(4); // Load 4 weeks of data
 
-      // Convert slots to schedule format
-      if (slots && slots.length > 0) {
-        const newSchedule = { ...initializeSchedule() };
+      // Convert weekly schedule to local schedule format
+      const newSchedule = { ...initializeSchedule() };
 
-        // Group slots by day of week
-        slots.forEach(slot => {
-          const date = new Date(slot.date);
-          const dayName = daysOfWeek[date.getDay() === 0 ? 6 : date.getDay() - 1]; // Convert Sunday=0 to Sunday=6
-
-          if (newSchedule[dayName]) {
-            // Convert slot time to HH:MM format
-            const startTime = slot.startTime.substring(0, 5); // "09:00:00" -> "09:00"
-            const endTime = slot.endTime.substring(0, 5);
-
-            // Check if this time slot already exists
-            const existingSlot = newSchedule[dayName].slots.find(
-              s => s.start === startTime && s.end === endTime
-            );
-
-            if (!existingSlot) {
-              newSchedule[dayName].slots.push({
-                start: startTime,
-                end: endTime
-              });
+      Object.entries(weeklySchedule).forEach(([weekday, slots]) => {
+        // Map uppercase weekday to capitalized (e.g., 'MONDAY' -> 'Monday')
+        const capitalizedWeekday = weekday.charAt(0) + weekday.slice(1).toLowerCase();
+        if (slots && slots.length > 0) {
+          newSchedule[capitalizedWeekday].enabled = true;
+          // Group slots by time and keep the first occurrence with status
+          const timeGroups = {};
+          slots.forEach(slot => {
+            const timeKey = `${slot.start}-${slot.end}`;
+            if (!timeGroups[timeKey]) {
+              timeGroups[timeKey] = {
+                start: slot.start,
+                end: slot.end,
+                id: slot.id,
+                status: slot.status,
+              };
             }
+          });
+          newSchedule[capitalizedWeekday].slots = Object.values(timeGroups);
+        }
+      });
 
-            // Enable the day if it has slots
-            newSchedule[dayName].enabled = true;
-          }
-        });
-
-        setSchedule(newSchedule);
-      }
-
-      // Slots loaded and converted to schedule format
+      setSchedule(newSchedule);
     } catch (err) {
       console.error('Error loading slots:', err);
+      setError('Failed to load existing availability. Please refresh the page.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,6 +146,20 @@ export default function Availability() {
         slots: prev[day].slots.filter((_, index) => index !== slotIndex)
       }
     }));
+  };
+
+  const deleteExistingSlot = async (slotId) => {
+    try {
+      await deleteSlot(slotId);
+      // Reload slots to reflect the deletion
+      await loadExistingSlots();
+      setPublishMessage('Slot deleted successfully!');
+      setTimeout(() => setPublishMessage(''), 3000);
+    } catch (err) {
+      console.error('Error deleting slot:', err);
+      setPublishMessage('Error deleting slot. Please try again.');
+      setTimeout(() => setPublishMessage(''), 3000);
+    }
   };
 
   const updateSlotTime = (day, slotIndex, field, value) => {
@@ -223,43 +233,38 @@ export default function Availability() {
       setPublishing(true);
       setPublishMessage('');
 
-      // Get next 7 days starting from today
-      const today = new Date();
-      const publishPromises = [];
-
-      for (let i = 0; i < 7; i++) {
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() + i);
-        const dateStr = targetDate.toISOString().split('T')[0];
-        const dayName = daysOfWeek[targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1];
-
-        // Check if this day is enabled in schedule
-        if (schedule[dayName]?.enabled && schedule[dayName].slots.length > 0) {
-          const timeSlots = schedule[dayName].slots.map(slot => ({
-            startTime: slot.start,
-            endTime: slot.end,
+      // Convert local schedule format to API format
+      const weeklySchedule = {};
+      daysOfWeek.forEach(day => {
+        if (schedule[day].enabled && schedule[day].slots.length > 0) {
+          weeklySchedule[day.toUpperCase()] = schedule[day].slots.map(slot => ({
+            start: slot.start,
+            end: slot.end,
           }));
-
-          publishPromises.push(
-            createSlots(dateStr, timeSlots).catch(err => {
-              console.error(`Error creating slots for ${dateStr}:`, err);
-              return null;
-            })
-          );
         }
-      }
+      });
 
-      await Promise.all(publishPromises);
-      setPublishMessage('Availability published successfully for the next 7 days!');
-      
-      // Reload slots
+      // Create normalized payload
+      const payload = {
+        slotDurationMinutes: 60, // Fixed to 1 hour slots
+        weeksToGenerate: 4, // Generate 4 weeks ahead
+        weeklySchedule,
+      };
+
+      const result = await saveWeeklyAvailability(payload);
+
+      setPublishMessage(`Availability saved successfully! Generated ${result.slotsGenerated} slots for ${result.weeksGenerated} weeks.`);
+
+      // Reload slots to reflect changes
       await loadExistingSlots();
 
       setTimeout(() => setPublishMessage(''), 5000);
 
     } catch (err) {
       console.error('Error publishing availability:', err);
-      setPublishMessage('Error publishing availability. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Error saving availability. Please try again.';
+      setPublishMessage(errorMessage);
+      setTimeout(() => setPublishMessage(''), 5000);
     } finally {
       setPublishing(false);
     }
@@ -298,10 +303,42 @@ export default function Availability() {
               Manage your weekly availability. Koshpal may schedule sessions within these windows.
             </p>
           </div>
-    <div className="flex flex-col h-full lg:flex-row">
-      {/* Main Content */}
-      <div className="flex-1 order-2 overflow-x-hidden overflow-y-auto lg:order-1 scrollbar-hide">
-        <div className="space-y-8 ">
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
+              <span className="ml-3" style={{ color: 'var(--color-text-secondary)' }}>Loading availability...</span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="p-4 border rounded-lg" style={{ 
+              backgroundColor: 'var(--color-error-light)', 
+              borderColor: 'var(--color-error)',
+              color: 'var(--color-error)' 
+            }}>
+              <div className="flex items-center justify-between">
+                <span>{error}</span>
+                <button
+                  onClick={() => {
+                    setError('');
+                    loadExistingSlots();
+                  }}
+                  className="px-3 py-1 text-sm rounded hover:opacity-80"
+                  style={{ backgroundColor: 'var(--color-error)', color: 'white' }}
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col h-full lg:flex-row">
+            {/* Main Content */}
+            <div className="flex-1 order-2 overflow-x-hidden overflow-y-auto lg:order-1 scrollbar-hide">
+              <div className="space-y-8">
 
           {/* Quick Presets */}
           <div className="p-4 space-y-4 border sm:p-6 rounded-xl" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
@@ -393,6 +430,7 @@ export default function Availability() {
                     <div className="space-y-3">
                       {schedule[day].slots.map((slot, slotIndex) => {
                         const duration = calculateDuration(slot.start, slot.end);
+                        const isExistingSlot = slot.id && slot.status;
                         return (
                           <div
                             key={slotIndex}
@@ -447,11 +485,23 @@ export default function Availability() {
                                 {duration}h
                               </span>
 
+                              {/* Status Indicator for existing slots */}
+                              {isExistingSlot && (
+                                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  slot.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                                  slot.status === 'BOOKED' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {slot.status}
+                                </span>
+                              )}
+
                               {/* Delete Button */}
                               <button
-                                onClick={() => removeSlot(day, slotIndex)}
+                                onClick={() => isExistingSlot ? deleteExistingSlot(slot.id) : removeSlot(day, slotIndex)}
                                 className="p-2 transition-all rounded-lg hover:opacity-80"
                                 style={{ color: 'var(--color-error)' }}
+                                title={isExistingSlot ? 'Delete from all future dates' : 'Remove from schedule'}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -576,9 +626,9 @@ export default function Availability() {
           </p>
         </div>
       </div>
-          </div>
-          </div>
-          </div>
+                </div>
+              </div>
+            </div>
         </main>
       </div>
     </div>

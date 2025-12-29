@@ -27,35 +27,10 @@ function Login() {
 
   // Check if already logged in
   useEffect(() => {
-    // First check localStorage
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (storedUser && storedUser.id && storedUser.role === 'COACH') {
       navigate('/');
-      return;
     }
-
-    // If no localStorage data, check with API
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
-          credentials: 'include', // Include cookies
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user && data.user.role === 'COACH') {
-            // Store user data and redirect
-            localStorage.setItem('user', JSON.stringify(data.user));
-            navigate('/');
-          }
-        }
-      } catch (error) {
-        // User is not authenticated, stay on login page
-        console.log('Login: User not authenticated');
-      }
-    };
-
-    checkAuth();
   }, [navigate]);
 
   const handleSignIn = async () => {
@@ -128,6 +103,9 @@ function Login() {
           </h1>
           <p className="text-sm sm:text-base" style={{ color: 'var(--color-text-secondary)' }}>
             Sign in to your coach portal
+          </p>
+          <p className="mt-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            Demo: coach@koshpal.com / password123
           </p>
         </div>
 

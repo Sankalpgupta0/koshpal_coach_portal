@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, User, LogOut, Moon, Sun } from 'lucide-react';
+import { Settings as SettingsIcon, User, LogOut, Moon, Sun, Menu } from 'lucide-react';
 import { logout, getMyProfile, updateMyProfile } from '../api';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 
 export default function Settings() {
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -32,6 +39,10 @@ export default function Settings() {
     // Load user profile
     loadProfile();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   const loadProfile = async () => {
     try {
@@ -142,12 +153,38 @@ export default function Settings() {
   }
 
   return (
-    <main className="flex-1 p-4 overflow-y-auto sm:p-6 md:p-8">
-      <p className="mb-6 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-        Manage your account and preferences
-      </p>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
 
-      {/* Profile Information Card */}
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+        } ${isSidebarOpen ? 'lg:blur-0 blur-[2px]' : ''}`}
+        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        
+        <Header 
+          title="Settings" 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+
+        <main className="flex-1 p-4 overflow-y-auto sm:p-6">
+          <div className="mx-auto space-y-6 max-w-7xl">
+            <div>
+              <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                Settings
+              </h1>
+              <p className="mb-6 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                Manage your account and preferences
+              </p>
+            </div>
+
+            {/* Profile Information Card */}
       <div
         className="p-6 rounded-lg sm:p-8"
         style={{
@@ -400,6 +437,9 @@ export default function Settings() {
           </button>
         </div>
       </div>
-    </main>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }

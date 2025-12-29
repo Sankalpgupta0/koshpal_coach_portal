@@ -1,7 +1,9 @@
-import { FileText } from "lucide-react";
+import { FileText, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import PaymentStatCard from "../components/PaymentStatCard";
 import InvoiceRow from "../components/InvoiceRow";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import { getPaymentStats, getInvoices } from "../api";
 
 export default function Payments() {
@@ -9,6 +11,15 @@ export default function Payments() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   useEffect(() => {
     fetchPaymentData();
@@ -66,53 +77,10 @@ export default function Payments() {
     } catch (err) {
       console.error('Error fetching payment data:', err);
       setError('Failed to load payment data. Please try again.');
-      
-      // Fallback to mock data on error
-      setStats([
-        {
-          label: "Total Earnings",
-          value: "₹ 120k",
-          subText: "+15% this month",
-          subColor: "text-green-600",
-        },
-        {
-          label: "Pending",
-          value: "₹ 12k",
-        },
-        {
-          label: "This Month",
-          value: "18",
-          subText: "Sessions",
-          subColor: "text-gray-500",
-        },
-        {
-          label: "Avg Rate",
-          value: "₹ 3.5k",
-          subText: "Per hour",
-          subColor: "text-gray-500",
-        },
-      ]);
-      
-      setInvoices([
-        {
-          id: "INV-001",
-          client: "Harsh Kumar",
-          amount: "7,000",
-          status: "Paid",
-        },
-        {
-          id: "INV-002",
-          client: "Sneha Desai",
-          amount: "3,500",
-          status: "Pending",
-        },
-        {
-          id: "INV-003",
-          client: "Priya Mehta",
-          amount: "3,500",
-          status: "Paid",
-        },
-      ]);
+
+      // Clear any partial data
+      setStats([]);
+      setInvoices([]);
     } finally {
       setLoading(false);
     }
@@ -132,8 +100,29 @@ export default function Payments() {
     );
   }
   return (
-    <div className="p-6 min-h-screen" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-      {/* Header */}
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+        } ${isSidebarOpen ? 'lg:blur-0 blur-[2px]' : ''}`}
+        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        
+        <Header 
+          title="Payments" 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+
+        <main className="flex-1 p-4 overflow-y-auto sm:p-6">
+          <div className="mx-auto space-y-6 max-w-7xl">
+            {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -170,6 +159,9 @@ export default function Payments() {
             <InvoiceRow key={i} invoice={invoice} />
           ))}
         </div>
+      </div>
+          </div>
+        </main>
       </div>
     </div>
   );

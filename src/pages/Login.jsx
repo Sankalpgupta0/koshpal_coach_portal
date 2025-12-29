@@ -27,12 +27,35 @@ function Login() {
 
   // Check if already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (token && user.role === 'COACH') {
+    // First check localStorage
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (storedUser && storedUser.id && storedUser.role === 'COACH') {
       navigate('/');
+      return;
     }
+
+    // If no localStorage data, check with API
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/v1/auth/me', {
+          credentials: 'include', // Include cookies
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user && data.user.role === 'COACH') {
+            // Store user data and redirect
+            localStorage.setItem('user', JSON.stringify(data.user));
+            navigate('/');
+          }
+        }
+      } catch (error) {
+        // User is not authenticated, stay on login page
+        console.log('Login: User not authenticated');
+      }
+    };
+
+    checkAuth();
   }, [navigate]);
 
   const handleSignIn = async () => {
@@ -50,12 +73,9 @@ function Login() {
       // Check if user has COACH role
       if (response.user.role !== 'COACH') {
         setError('Access denied. This portal is for coaches only.');
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
         return;
       }
-
-      console.log('Login successful:', response);
       
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
@@ -77,11 +97,11 @@ function Login() {
 
   return (
     <div
-      className="flex justify-center items-center min-h-screen p-4 sm:p-6 md:p-8"
+      className="flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8"
       style={{ backgroundColor: 'var(--color-bg-secondary)' }}
     >
       <div
-        className="rounded-2xl shadow-lg p-6 sm:p-8 w-full max-w-md relative"
+        className="relative w-full max-w-md p-6 shadow-lg rounded-2xl sm:p-8"
         style={{
           backgroundColor: 'var(--color-bg-card)',
           boxShadow: 'var(--shadow-lg)',
@@ -91,7 +111,7 @@ function Login() {
         <div className="flex items-center gap-2 mb-6 sm:mb-8">
           <img src="/logo.png" alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
           <span
-            className="text-lg sm:text-xl font-bold"
+            className="text-lg font-bold sm:text-xl"
             style={{ color: 'var(--color-text-primary)' }}
           >
             Koshpal
@@ -101,7 +121,7 @@ function Login() {
         {/* Welcome Text */}
         <div className="mb-6 sm:mb-8">
           <h1
-            className="text-2xl sm:text-3xl font-bold mb-2"
+            className="mb-2 text-2xl font-bold sm:text-3xl"
             style={{ color: 'var(--color-text-primary)' }}
           >
             Welcome back
@@ -114,7 +134,7 @@ function Login() {
         {/* Error Message */}
         {error && (
           <div
-            className="mb-4 p-3 rounded-lg text-sm"
+            className="p-3 mb-4 text-sm rounded-lg"
             style={{
               backgroundColor: 'var(--color-error-light)',
               color: 'var(--color-error)',
@@ -129,14 +149,14 @@ function Login() {
           {/* Work Email */}
           <div className="mb-3 sm:mb-4">
             <label
-              className="block text-xs sm:text-sm font-semibold mb-2"
+              className="block mb-2 text-xs font-semibold sm:text-sm"
               style={{ color: 'var(--color-text-primary)' }}
             >
               Work Email
             </label>
             <div className="relative">
               <Mail
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5"
+                className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 sm:w-5 sm:h-5"
                 style={{ color: 'var(--color-text-tertiary)' }}
               />
               <input
@@ -158,14 +178,14 @@ function Login() {
           {/* Password */}
           <div className="mb-3 sm:mb-4">
             <label
-              className="block text-xs sm:text-sm font-semibold mb-2"
+              className="block mb-2 text-xs font-semibold sm:text-sm"
               style={{ color: 'var(--color-text-primary)' }}
             >
               Password
             </label>
             <div className="relative">
               <Lock
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5"
+                className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 sm:w-5 sm:h-5"
                 style={{ color: 'var(--color-text-tertiary)' }}
               />
               <input
@@ -185,7 +205,7 @@ function Login() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={loading}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 hover:opacity-70 cursor-pointer disabled:opacity-50"
+                className="absolute transform -translate-y-1/2 cursor-pointer right-3 top-1/2 hover:opacity-70 disabled:opacity-50"
                 style={{ color: 'var(--color-text-tertiary)' }}
               >
                 {showPassword ? (
@@ -198,7 +218,7 @@ function Login() {
           </div>
 
           {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between mb-5 sm:mb-6 gap-2">
+          <div className="flex items-center justify-between gap-2 mb-5 sm:mb-6">
             <label className="flex items-center flex-shrink-0">
               <input
                 type="checkbox"
@@ -220,7 +240,7 @@ function Login() {
             </label>
             <a
               href="#"
-              className="text-xs sm:text-sm font-medium whitespace-nowrap hover:opacity-80"
+              className="text-xs font-medium sm:text-sm whitespace-nowrap hover:opacity-80"
               style={{ color: 'var(--color-secondary)' }}
             >
               Forgot password?
@@ -241,7 +261,7 @@ function Login() {
             {loading ? (
               <>
                 <div
-                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                  className="w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"
                 ></div>
                 Signing In...
               </>

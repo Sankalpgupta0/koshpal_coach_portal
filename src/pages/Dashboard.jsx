@@ -3,7 +3,9 @@ import StatCard from '../components/StatCard';
 import SessionCard from '../components/SessionCard';
 import SessionModal from '../components/SessionModal';
 import RescheduleModal from '../components/RescheduleModal';
-import { Calendar, DollarSign, Star } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import { Calendar, DollarSign, Star, Menu } from 'lucide-react';
 import { getMyConsultations, getConsultationStats } from '../api';
 
 export default function Dashboard() {
@@ -16,6 +18,11 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
 
   // Fetch data on component mount
   useEffect(() => {
@@ -79,6 +86,10 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -162,17 +173,55 @@ export default function Dashboard() {
   }
 
   return (
-    <>
-      <div className="w-full max-w-full space-y-6">
-        {/* Welcome Section */}
-        <div>
-          <h1 className="text-h1" style={{ color: 'var(--color-text-primary)' }}>
-            Welcome back, {userName}!
-          </h1>
-          <p className="text-body-md" style={{ color: 'var(--color-text-secondary)' }}>
-            {sessions.length} session{sessions.length !== 1 ? 's' : ''} scheduled for today
-          </p>
-        </div>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+        } ${isSidebarOpen ? 'lg:blur-0 blur-[2px]' : ''}`}
+        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        
+        <Header 
+          title="Dashboard" 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+
+        <main className="flex-1 p-4 overflow-y-auto sm:p-6">
+          <div className="mx-auto space-y-6 max-w-7xl">
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <p style={{ color: 'var(--color-error)' }}>{error}</p>
+                <button
+                  onClick={fetchDashboardData}
+                  className="mt-4 px-4 py-2 rounded-lg"
+                  style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="w-full max-w-full space-y-6">
+                  {/* Welcome Section */}
+                  <div>
+                    <h1 className="text-h1" style={{ color: 'var(--color-text-primary)' }}>
+                      Welcome back, {userName}!
+                    </h1>
+                    <p className="text-body-md" style={{ color: 'var(--color-text-secondary)' }}>
+                      {sessions.length} session{sessions.length !== 1 ? 's' : ''} scheduled for today
+                    </p>
+                  </div>
 
         {/* Stats Grid - Responsive grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-5">
@@ -314,8 +363,11 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Session Modal */}
+              </>
+            )}
+          </div>
+        </main>
+      </div>
       <SessionModal
         session={selectedSession}
         isOpen={isModalOpen}
@@ -328,6 +380,6 @@ export default function Dashboard() {
         isOpen={isRescheduleModalOpen}
         onClose={handleCloseRescheduleModal}
       />
-    </>
+    </div>
   );
 }

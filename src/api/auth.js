@@ -9,13 +9,12 @@ export const login = async (email, password) => {
     email,
     password,
   });
-  
-  // Store token and user data
-  if (response.data.accessToken) {
-    localStorage.setItem('token', response.data.accessToken);
+
+  // Store user data in localStorage (tokens are in httpOnly cookies)
+  if (response.data.user) {
     localStorage.setItem('user', JSON.stringify(response.data.user));
   }
-  
+
   return response.data;
 };
 
@@ -28,7 +27,6 @@ export const logout = async () => {
     await axiosInstance.post('/auth/logout');
   } finally {
     // Always clear local storage
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
 };
@@ -48,11 +46,7 @@ export const getCurrentUser = async () => {
  */
 export const refreshToken = async () => {
   const response = await axiosInstance.post('/auth/refresh');
-  
-  if (response.data.accessToken) {
-    localStorage.setItem('token', response.data.accessToken);
-  }
-  
+  // Tokens are set in httpOnly cookies, no need to store in localStorage
   return response.data;
 };
 

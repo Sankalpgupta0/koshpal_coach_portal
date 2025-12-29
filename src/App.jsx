@@ -17,7 +17,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Login Route */}
+        {/* Login - Public route */}
         <Route path="/login" element={<Login />} />
         
         {/* Calendar - Standalone (manages its own sidebar) */}
@@ -27,21 +27,61 @@ function App() {
           </ProtectedRoute>
         } />
         
-        {/* Main Layout Routes - Protected */}
-        <Route element={
+        {/* Dashboard - Standalone */}
+        <Route path="/" element={
           <ProtectedRoute>
-            <Layout />
+            <Dashboard />
           </ProtectedRoute>
-        }>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/sessions" element={<Sessions />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/client-overview" element={<ClientOverview />} />
-          <Route path="/availability" element={<Availability />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
+        } />
+        
+        {/* Sessions - Standalone */}
+        <Route path="/sessions" element={
+          <ProtectedRoute>
+            <Sessions />
+          </ProtectedRoute>
+        } />
+        
+        {/* Clients - Standalone */}
+        <Route path="/clients" element={
+          <ProtectedRoute>
+            <Clients />
+          </ProtectedRoute>
+        } />
+        
+        {/* Client Overview - Standalone */}
+        <Route path="/client-overview" element={
+          <ProtectedRoute>
+            <ClientOverview />
+          </ProtectedRoute>
+        } />
+        
+        {/* Availability - Standalone */}
+        <Route path="/availability" element={
+          <ProtectedRoute>
+            <Availability />
+          </ProtectedRoute>
+        } />
+        
+        {/* Payments - Standalone */}
+        <Route path="/payments" element={
+          <ProtectedRoute>
+            <Payments />
+          </ProtectedRoute>
+        } />
+        
+        {/* Reports - Standalone */}
+        <Route path="/reports" element={
+          <ProtectedRoute>
+            <Reports />
+          </ProtectedRoute>
+        } />
+        
+        {/* Settings - Standalone */}
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
 
         {/* Catch all - redirect to login or dashboard */}
         <Route path="*" element={<Navigate to="/login" replace />} />

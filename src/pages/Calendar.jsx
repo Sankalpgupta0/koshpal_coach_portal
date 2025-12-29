@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Menu } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import { getMyConsultations, getConsultationStats } from '../api';
 
 export default function Calendar() {
-  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
@@ -55,15 +54,18 @@ export default function Calendar() {
         setStats(statsData);
       } catch (error) {
         console.error('Error fetching consultation data:', error);
+        // If unauthorized, the user might need to log in again
+        if (error.response?.status === 401) {
+          console.log('User not authenticated, redirecting to login');
+          // You might want to redirect to login here
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchData();
-    }
+    // Since authentication uses httpOnly cookies, we don't need to check for localStorage token
+    fetchData();
   }, [currentWeekStart]);
 
   useEffect(() => {
@@ -76,13 +78,6 @@ export default function Calendar() {
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-  }, [navigate]);
 
   // Calculate this week's count from filtered consultations
   const thisWeekCount = consultations.filter(c => 
@@ -105,6 +100,11 @@ export default function Calendar() {
         style={{ backgroundColor: 'var(--color-bg-secondary)' }}
       >
         
+        <Header 
+          title="Calendar" 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+
         <main className="flex-1 p-4 overflow-y-auto sm:p-6">
           <div className="mx-auto space-y-6 max-w-7xl">
             {/* Page Header */}

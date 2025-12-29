@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
-import { Search, X, Video, Calendar, TrendingUp, Clock, ChevronRight, Bell, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, X, Video, Calendar, TrendingUp, Clock, ChevronRight, Bell, ArrowLeft, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 
 
 export default function ClientOverview() {
   const [activeTab, setActiveTab] = useState('Overview');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   const handleBackToClients = () => {
     navigate('/clients');
@@ -84,8 +95,29 @@ export default function ClientOverview() {
   ];
 
   return (
-    <div className="flex-1 min-h-screen" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-      {/* Header */}
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+        } ${isSidebarOpen ? 'lg:blur-0 blur-[2px]' : ''}`}
+        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        
+        <Header 
+          title="Client Overview" 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+
+        <main className="flex-1 p-4 overflow-y-auto sm:p-6">
+          <div className="mx-auto space-y-6 max-w-7xl">
+            {/* Header */}
       <div className="py-3 px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4 h-10">
@@ -366,6 +398,9 @@ export default function ClientOverview() {
             <p className="font-jakarta text-grey-mid">Messages content will be displayed here.</p>
           </div>
         )}
+      </div>
+          </div>
+        </main>
       </div>
     </div>
   );

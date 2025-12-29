@@ -1,9 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Clock, Trash2, Calendar, Plus, Save } from 'lucide-react';
+import { Clock, Trash2, Calendar, Plus, Save, Menu } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import { createSlots, getMySlots } from '../api';
 
 
 export default function Availability() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
   // Generate time options (00:00 to 23:30 in 30-min intervals)
@@ -51,11 +58,19 @@ export default function Availability() {
   };
 
   const [schedule, setSchedule] = useState(initializeSchedule);
-  const [timezone, setTimezone] = useState('Asia/Kolkata');
+  const [timezone, setTimezone] = useState(() => {
+    // Get user's actual timezone
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return userTimezone || 'Asia/Kolkata';
+  });
   const [sessionDuration, setSessionDuration] = useState('45');
   const [recurringSchedule, setRecurringSchedule] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [publishMessage, setPublishMessage] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   // Load existing slots on mount
   useEffect(() => {
@@ -65,8 +80,42 @@ export default function Availability() {
   const loadExistingSlots = async () => {
     try {
       const slots = await getMySlots();
-      // TODO: Convert slots to schedule format if needed
-      console.log('Existing slots:', slots);
+
+      // Convert slots to schedule format
+      if (slots && slots.length > 0) {
+        const newSchedule = { ...initializeSchedule() };
+
+        // Group slots by day of week
+        slots.forEach(slot => {
+          const date = new Date(slot.date);
+          const dayName = daysOfWeek[date.getDay() === 0 ? 6 : date.getDay() - 1]; // Convert Sunday=0 to Sunday=6
+
+          if (newSchedule[dayName]) {
+            // Convert slot time to HH:MM format
+            const startTime = slot.startTime.substring(0, 5); // "09:00:00" -> "09:00"
+            const endTime = slot.endTime.substring(0, 5);
+
+            // Check if this time slot already exists
+            const existingSlot = newSchedule[dayName].slots.find(
+              s => s.start === startTime && s.end === endTime
+            );
+
+            if (!existingSlot) {
+              newSchedule[dayName].slots.push({
+                start: startTime,
+                end: endTime
+              });
+            }
+
+            // Enable the day if it has slots
+            newSchedule[dayName].enabled = true;
+          }
+        });
+
+        setSchedule(newSchedule);
+      }
+
+      // Slots loaded and converted to schedule format
     } catch (err) {
       console.error('Error loading slots:', err);
     }
@@ -217,8 +266,30 @@ export default function Availability() {
   };
 
   return (
-    <div className='space-y-8 lg:px-4 sm:px-0'>
-       {/* Header */}
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
+        } ${isSidebarOpen ? 'lg:blur-0 blur-[2px]' : ''}`}
+        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+      >
+        
+        <Header 
+          title="Availability" 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
+
+        <main className="flex-1 p-4 overflow-y-auto sm:p-6">
+          <div className="mx-auto space-y-6 max-w-7xl">
+            <div className='space-y-8 lg:px-4 sm:px-0'>
+               {/* Header */}
           <div className='h-auto sm:h-[66px] space-y-1'>
             <h1 className="text-h1" style={{ color: 'var(--color-text-primary)' }}>
               Set Availability
@@ -505,7 +576,11 @@ export default function Availability() {
           </p>
         </div>
       </div>
-    </div>
+          </div>
+          </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

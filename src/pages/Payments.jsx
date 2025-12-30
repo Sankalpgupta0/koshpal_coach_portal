@@ -88,10 +88,10 @@ export default function Payments() {
 
   if (loading) {
     return (
-      <div className="p-6 min-h-screen" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+      <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" 
+            <div className="w-16 h-16 mx-auto mb-4 border-4 rounded-full border-t-transparent animate-spin" 
                  style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}></div>
             <p style={{ color: 'var(--color-text-secondary)' }}>Loading payments...</p>
           </div>
@@ -125,22 +125,20 @@ export default function Payments() {
             {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            Payments & Invoices
-          </h1>
+          
           <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Track your earnings and manage invoices
           </p>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm hover:opacity-90 transition-all" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}>
+        <button className="flex items-center gap-2 px-4 py-2 text-sm transition-all rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}>
           <FileText size={16} />
           Create Invoice
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
           <PaymentStatCard key={i} {...stat} />
         ))}

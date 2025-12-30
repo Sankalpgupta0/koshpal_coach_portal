@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, X, Video, Calendar, TrendingUp, Clock, ChevronRight, Bell, ArrowLeft, Menu } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { getMyConsultations } from '../api';
 
 
 export default function ClientOverview() {
@@ -12,85 +13,154 @@ export default function ClientOverview() {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
   });
+  const [hoveredBar, setHoveredBar] = useState(null);
+  const [consultations, setConsultations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const client = location.state?.client;
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
+  // Fetch consultations for the client
+  useEffect(() => {
+    if (client) {
+      fetchClientConsultations();
+    }
+  }, [client]);
+
+  const fetchClientConsultations = async () => {
+    try {
+      setLoading(true);
+      const allConsultations = await getMyConsultations();
+      const clientConsultations = allConsultations.filter(c => c.booking?.employee?.id === client.id);
+      console.log(allConsultations);
+      setConsultations(clientConsultations);
+    } catch (error) {
+      console.error('Error fetching client consultations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Redirect if no client data
+  useEffect(() => {
+    if (!client) {
+      navigate('/clients');
+    }
+    // console.log(client);
+  }, [client, navigate]);
+
   const handleBackToClients = () => {
     navigate('/clients');
   };
 
-  const clientData = {
-    name: 'Harsh Kumar',
-    role: 'Marketing Manager',
-    company: 'Tech Solutions Pvt Ltd',
-    totalSessions: 12,
-    completedSessions: 12,
-    scheduledSessions: 2,
-    engagement: 'Active',
-    lastSession: 'Oct 20',
-    upcomingSession: {
-      date: '12 May',
-      time: '10:20 AM'
+  // Use client data if available, otherwise fallback
+  const clientData = useMemo(() => {
+    // Try to get company from consultations data first
+    const companyFromConsultations = consultations.find(c => c.booking?.employee?.company)?.booking.employee.company;
+
+    return client ? {
+      name: client.name,
+      role: client.role || 'Employee',
+      company: companyFromConsultations || client.plan || 'N/A',
+      totalSessions: consultations.length,
+      completedSessions: consultations.filter(c => c.status === 'COMPLETED').length,
+      scheduledSessions: consultations.filter(c => c.status === 'CONFIRMED').length,
+      engagement: 'Active', // Placeholder
+      lastSession: client.lastSession,
+      upcomingSession: client.nextSession ? {
+        date: client.nextSession,
+        time: '10:20 AM' // Placeholder
+      } : null
+    } : {
+      name: 'Harsh Kumar',
+      role: 'Marketing Manager',
+      company: 'Tech Solutions Pvt Ltd',
+      totalSessions: 12,
+      completedSessions: 12,
+      scheduledSessions: 2,
+      engagement: 'Active',
+      lastSession: 'Oct 20',
+      upcomingSession: {
+        date: '12 May',
+        time: '10:20 AM'
+      }
+    };
+  }, [client, consultations]);
+
+  // Log client data for debugging
+  // console.log('Client data:', clientData);
+  // console.log('Consultations:', consultations);
+  // Generate engagement data from consultations
+  const engagementData = useMemo(() => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const sessionsByMonth = {};
+
+    // Initialize prev 3, current, and next 2 months
+    const now = new Date();
+    for (let i = -3; i <= 2; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+      sessionsByMonth[monthKey] = {
+        month: monthNames[date.getMonth()],
+        year: date.getFullYear(),
+        sessions: 0,
+        fullDate: date,
+        isCurrentMonth: i === 0
+      };
     }
-  };
-  const engagementData = [
-    { month: 'May', sessions: 3 },
-    { month: 'Jun', sessions: 5 },
-    { month: 'Jul', sessions: 1 },
-    { month: 'Aug', sessions: 4 },
-    { month: 'Sep', sessions: 5 },
-    { month: 'Oct', sessions: 2 }
-  ];
-  const sessionData = [
+
+    // Count sessions per month
+    consultations.forEach(consultation => {
+      const date = new Date(consultation.date);
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+      if (sessionsByMonth[monthKey]) {
+        sessionsByMonth[monthKey].sessions += 1;
+      }
+    });
+
+    return Object.values(sessionsByMonth).sort((a, b) => a.fullDate - b.fullDate);
+  }, [consultations]);
+
+  const sessionData = useMemo(() => consultations.map(consultation => (
+    console.log(consultation),
     {
-      id: 1,
-      date: 'Nov 10',
-      time: '09:00 AM',
-      type: 'group Session',
-      duration: '60 minutes',
-      status: 'scheduled',
-      rating: null,
-      message: null
-    },
-    {
-      id: 2,
-      date: 'Nov 8',
-      time: '09:00 AM',
-      type: 'group Session',
-      duration: '60 minutes',
-      status: 'completed',
-      rating: '4.0',
-      message: 'Good progress on career goals. Discussed transition strategy.'
-    },
-    {
-      id: 3,
-      date: 'Nov 15',
-      time: '03:30 PM',
-      type: 'group Session',
-      duration: '60 minutes',
-      status: 'scheduled',
-      rating: null,
-      message: null
-    },
-    {
-      id: 4,
-      date: 'Oct 15',
-      time: '11:00 AM',
-      type: '1-on-1 Session',
-      duration: '45 minutes',
-      status: 'completed',
-      rating: '4.5',
-      message: 'Excellent session. Client showed great improvement.'
-    }
-  ];
+    id: consultation.id,
+    date: new Date(consultation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    time: new Date(consultation.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    type: 'Session', // Placeholder
+    duration: `${Math.round((new Date(consultation.endTime) - new Date(consultation.startTime)) / (1000 * 60))} minutes`,
+    status: (() => {
+      const now = new Date();
+      const startTime = new Date(consultation.startTime);
+      const endTime = new Date(consultation.endTime);
+      
+      // If consultation has started and not yet ended, it's in progress
+      if (startTime <= now && endTime > now && consultation.booking?.status === 'CONFIRMED') {
+        return 'scheduled';
+      }
+      
+      // If consultation has ended, show as completed regardless of booking status
+      if (endTime <= now) {
+        return 'completed';
+      }
+      
+      // Otherwise use booking status
+      return consultation.booking?.status === 'CONFIRMED' ? 'scheduled' : 
+             consultation.booking?.status === 'COMPLETED' ? 'completed' : 
+             (consultation.booking?.status || 'unknown').toLowerCase();
+    })(),
+    rating: consultation.rating || null,
+    message: consultation.notes || null
+  })), [consultations]);
 
   const tabs = [
     { id: 'Overview', label: 'Overview' },
     { id: 'Sessions', label: 'Sessions' },
-    { id: 'Notes', label: `Notes (1)` },
+    { id: 'Notes', label: `Notes (0)` },
     { id: 'Messages', label: 'Messages' }
   ];
 
@@ -117,75 +187,39 @@ export default function ClientOverview() {
 
         <main className="flex-1 p-4 overflow-y-auto sm:p-6">
           <div className="mx-auto space-y-6 max-w-7xl">
-            {/* Header */}
-      <div className="py-3 px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4 h-10">
-            <button 
-              onClick={handleBackToClients}
-              className="hover:opacity-80 rounded-lg transition-all h-8 w-8 sm:h-6 sm:w-6 flex items-center justify-center"
-              style={{ color: 'var(--color-text-tertiary)' }}
-            >
-              <ArrowLeft className="w-[7.78px] h-[12.73px]" />
-            </button>
-            <h1 className="text-h3" style={{ color: 'var(--color-text-primary)' }}>
-              Overview
-            </h1>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            {/* Search Bar */}
-            <div className="relative rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.08)] flex-1 sm:flex-initial">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" />
-              <input
-                placeholder="Search"
-                className="w-full sm:w-48 lg:w-64 pl-9 pr-9 py-2 text-sm border rounded-full focus:ring-2 focus:ring-[#5AB9C9] outline-none"
-              />
-              <X className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 cursor-pointer" />
-            </div>
-              
-              {/* Join Session Button */}
-              <button className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-jakarta font-medium text-sm hover:opacity-90 transition-all" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}>
-                <Video className="w-4 h-4" />
-                <span className="hidden sm:inline">Join Session</span>
-                <span className="sm:hidden">Join</span>
-              </button>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="">
         {/* Client Information Section */}
         <div className="rounded-[12px] border-[0.8px] p-4 sm:p-6 mb-6 mx-4 sm:mx-6" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-7">
             <div className="flex items-start gap-4">
               {/* Client Avatar */}
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-lightest rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="font-outfit font-medium text-xl sm:text-[24px] text-primary-primary">
+              <div className="flex items-center justify-center flex-shrink-0 rounded-full w-14 h-14 sm:w-16 sm:h-16" style={{ backgroundColor: 'var(--color-primary-light)' }}>
+                <span className="font-outfit font-medium text-xl sm:text-[24px]" style={{ color: 'var(--color-primary)' }}>
                   {clientData.name.split(' ').map(n => n[0]).join('')}
                 </span>
               </div>
               
               {/* Client Details */}
               <div className="min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <h2 className="font-outfit font-medium text-base leading-6 tracking-normal truncate">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                  <h2 className="font-medium leading-6 tracking-normal truncate font-outfit" style={{ color: 'var(--color-text-primary)' }}>
                     {clientData.name}
                   </h2>
                   <span className="px-2 py-1 font-plus font-semibold text-[10px] leading-[13.33px] tracking-normal rounded-[6px] inline-flex items-center flex-shrink-0" style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-inverse)' }}>
                     {clientData.company}
                   </span>
                 </div>
-                <p className="font-plus font-normal text-sm leading-6 tracking-normal text-grey-mid">
+                <p className="text-sm font-normal leading-6 tracking-normal font-plus" style={{ color: 'var(--color-text-secondary)' }}>
                   {clientData.role}
                 </p>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
-                  <span className="font-plus font-medium text-sm text-[#334EAC]">
+                <div className="flex flex-col gap-1 mt-1 sm:flex-row sm:items-center sm:gap-2">
+                  <span className="text-sm font-medium font-plus" style={{ color: 'var(--color-primary)' }}>
                     {clientData.totalSessions} sessions completed
                   </span>
-                  <span className="hidden sm:inline w-1 h-1 bg-grey-mid rounded-full"></span>
-                  <span className="font-plus font-medium text-sm text-[#334EAC]">
+                  <span className="hidden w-1 h-1 rounded-full sm:inline" style={{ backgroundColor: 'var(--color-text-secondary)' }}></span>
+                  <span className="text-sm font-medium font-plus" style={{ color: 'var(--color-primary)' }}>
                     {clientData.scheduledSessions} Scheduled
                   </span>
                 </div>
@@ -194,70 +228,74 @@ export default function ClientOverview() {
           </div>
 
           {/* Tabs */}
-          <div className="flex flex-col sm:flex-row gap-2 mt-6 h-auto sm:h-[48px] bg-[#F9F9F9] rounded-xl p-1 shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
+          <div className="flex flex-col sm:flex-row gap-2 mt-6 h-auto sm:h-[48px] rounded-xl p-1" style={{ backgroundColor: 'var(--color-bg-tertiary)', boxShadow: 'var(--shadow-lg)' }}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`h-auto sm:h-[37px] flex-1 flex items-center justify-center gap-2 py-2 px-2 sm:py-1 rounded-[8px] transition-colors text-xs sm:text-sm ${
                   activeTab === tab.id
-                    ? 'bg-[#334EAC] text-white-darkest shadow-[0px_6px_14px_rgba(0,0,0,0.17)] font-sans font-normal leading-5 tracking-normal'
-                    : 'font-arial font-normal hover:bg-grey-lightest'
+                    ? 'font-sans font-normal leading-5 tracking-normal'
+                    : 'font-arial font-normal hover:opacity-80'
                 }`}
+                style={{
+                  backgroundColor: activeTab === tab.id ? 'var(--color-primary)' : 'transparent',
+                  color: activeTab === tab.id ? 'var(--color-text-inverse)' : 'var(--color-text-primary)'
+                }}
               >
                 <span className="truncate">{tab.label}</span>
-                {tab.id === 'Sessions' && <span className="bg-[#17A2B8] text-white-darkest font-plus font-semibold text-[10px] w-[18px] h-[18px] px-1 rounded-full flex-shrink-0">1</span>}
-                {tab.id === 'Notes' && <span className="bg-[#17A2B8] text-white-darkest font-plus font-semibold text-[10px] w-[18px] h-[18px] px-1 rounded-full flex-shrink-0">10</span>}
-                {tab.id === 'Messages' && <span className="bg-[#17A2B8] text-white-darkest font-plus font-semibold text-[10px] w-[18px] h-[18px] px-1 rounded-full flex-shrink-0">3</span>}
+                {tab.id === 'Sessions' && <span className="font-plus font-semibold text-[10px] w-[18px] h-[18px] px-1 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-inverse)' }}>{consultations.length}</span>}
+                {tab.id === 'Notes' && <span className="font-plus font-semibold text-[10px] w-[18px] h-[18px] px-1 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-inverse)' }}>0</span>}
+                {tab.id === 'Messages' && <span className="font-plus font-semibold text-[10px] w-[18px] h-[18px] px-1 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-inverse)' }}>0</span>}
               </button>
             ))}
           </div>
 
             {/* Overview Content */}
             {activeTab === 'Overview' && (
-            <div className="space-y-6 mt-4">
+            <div className="mt-4 space-y-6">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
                     {/* Total Sessions Card */}
-                    <div className="bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6 flex flex-col justify-between min-h-[140px] sm:h-[177px]">
-                        <h3 className="font-plus font-normal text-sm leading-[14px] tracking-normal text-[#808080]">
+                    <div className="rounded-xl border p-4 sm:p-6 flex flex-col justify-between min-h-[140px] sm:h-[177px]" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
+                        <h3 className="font-plus font-normal text-sm leading-[14px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
                         Total Sessions
                         </h3>
                         <div>
-                            <p className="font-plus font-semibold text-2xl sm:text-[32px] leading-7 sm:leading-[48px] tracking-normal text-[#333333]">
+                            <p className="font-plus font-semibold text-2xl sm:text-[32px] leading-7 sm:leading-[48px] tracking-normal" style={{ color: 'var(--color-text-primary)' }}>
                             {clientData.totalSessions}
                             </p>
-                            <p className="font-plus font-normal text-sm leading-5 tracking-[0.14px] text-[#999999]">
+                            <p className="font-plus font-normal text-sm leading-5 tracking-[0.14px]" style={{ color: 'var(--color-text-secondary)' }}>
                             {clientData.totalSessions} completed
                             </p>
                         </div>
                     </div>
 
                     {/* Engagement Card */}
-                    <div className="bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6 flex flex-col justify-between min-h-[140px] sm:h-[177px]">
-                        <h3 className="font-plus font-normal text-sm leading-[14px] tracking-normal text-[#808080]">
+                    <div className="rounded-xl border p-4 sm:p-6 flex flex-col justify-between min-h-[140px] sm:h-[177px]" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
+                        <h3 className="font-plus font-normal text-sm leading-[14px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
                         Engagement
                         </h3>
                         <div>
-                            <p className="font-plus font-semibold text-2xl sm:text-[32px] leading-7 sm:leading-[48px] tracking-normal text-[#333333]">
+                            <p className="font-plus font-semibold text-2xl sm:text-[32px] leading-7 sm:leading-[48px] tracking-normal" style={{ color: 'var(--color-text-primary)' }}>
                             {clientData.engagement}
                             </p>
-                            <p className="font-plus font-normal text-sm leading-5 tracking-[0.14px] text-[#999999]">
+                            <p className="font-plus font-normal text-sm leading-5 tracking-[0.14px]" style={{ color: 'var(--color-text-secondary)' }}>
                             Last session: {clientData.lastSession}
                             </p>
                         </div>
                     </div>
 
                     {/* Upcoming Session Card */}
-                    <div className="bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6 flex flex-col justify-between min-h-[140px] sm:h-[177px]">
-                        <h3 className="font-plus font-normal text-sm leading-[14px] tracking-normal text-[#808080]">
+                    <div className="rounded-xl border p-4 sm:p-6 flex flex-col justify-between min-h-[140px] sm:h-[177px]" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
+                        <h3 className="font-plus font-normal text-sm leading-[14px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
                         Upcoming Session
                         </h3>
                         <div>
-                            <p className="font-plus font-semibold text-2xl sm:text-[32px] leading-7 sm:leading-[48px] tracking-normal text-[#333333]">
+                            <p className="font-plus font-semibold text-2xl sm:text-[32px] leading-7 sm:leading-[48px] tracking-normal" style={{ color: 'var(--color-text-primary)' }}>
                             {clientData.upcomingSession.date}
                             </p>
-                            <p className="font-plus font-normal text-sm leading-5 tracking-[0.14px] text-[#999999]">
+                            <p className="font-plus font-normal text-sm leading-5 tracking-[0.14px]" style={{ color: 'var(--color-text-secondary)' }}>
                             {clientData.upcomingSession.time}
                             </p>
                         </div>
@@ -265,28 +303,55 @@ export default function ClientOverview() {
                 </div>
 
                 {/* Engagement Trend */}
-                <div className="bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6">
+                <div className="p-4 border rounded-xl sm:p-6" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
                     <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                        <TrendingUp className="w-5 h-5 text-[#4CAF50]" />
-                        <h3 className="font-outfit font-medium text-base sm:text-[18px] leading-5 sm:leading-[27px] text-[#333333]">
+                        <TrendingUp className="w-5 h-5" style={{ color: 'var(--color-success)' }} />
+                        <h3 className="font-outfit font-medium text-base sm:text-[18px] leading-5 sm:leading-[27px]" style={{ color: 'var(--color-text-primary)' }}>
                             Engagement Trend
                         </h3>
                     </div>
-                    <div className="flex items-end justify-between h-32 sm:h-48 px-2">
-                        {engagementData.map((data, index) => (
-                            <div key={data.month} className="flex flex-col items-center flex-1 mx-0.5">
-                                <div
-                                    className="w-full bg-[#4E986D] rounded-t-lg flex items-center justify-center text-white-darkest font-jakarta font-medium text-xs"
-                                    style={{ height: `${data.sessions * 20}px` }}
-                                >
-                                    {data.sessions > 0 && data.sessions}
+                    <div className="relative flex items-end justify-between h-32 px-2 sm:h-48">
+                        {(() => {
+                            const maxSessions = Math.max(...engagementData.map(d => d.sessions), 1);
+                            const maxHeight = 120; // pixels
+                            const scaleFactor = maxHeight / maxSessions;
+
+                            return engagementData.map((data, index) => (
+                                <div key={`${data.month}-${data.year}-${index}`} className="flex flex-col items-center flex-1 mx-0.5 relative">
+                                    <div
+                                        className={`w-full rounded-t-lg flex items-end justify-center font-jakarta font-medium text-xs transition-all duration-200 cursor-pointer ${
+                                            data.isCurrentMonth ? 'opacity-90' : ''
+                                        } ${hoveredBar === index ? 'opacity-80' : ''}`}
+                                        style={{ 
+                                            height: `${Math.max(data.sessions * scaleFactor, 4)}px`,
+                                            backgroundColor: data.isCurrentMonth ? 'var(--color-secondary)' : 'var(--color-success)',
+                                            color: 'var(--color-text-inverse)'
+                                        }}
+                                        onMouseEnter={() => setHoveredBar(index)}
+                                        onMouseLeave={() => setHoveredBar(null)}
+                                    >
+                                        {data.sessions > 0 && (
+                                            <span className="mb-1 text-xs font-semibold">
+                                                {data.sessions}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Hover tooltip */}
+                                    {hoveredBar === index && (
+                                        <div className="absolute z-10 px-2 py-1 text-xs font-medium transform -translate-x-1/2 rounded -top-8 left-1/2 whitespace-nowrap" style={{ backgroundColor: 'var(--color-bg-card)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-primary)' }}>
+                                            {data.sessions} session{data.sessions !== 1 ? 's' : ''} in {data.month} {data.year}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            ));
+                        })()}
                     </div>
-                    <div className="flex justify-between mt-2 text-xs text-grey-mid font-jakarta">
-                        <span>{engagementData[0].month}</span>
-                        <span>{engagementData[engagementData.length - 1].month}</span>
+                    <div className="flex justify-between px-2 mt-2 text-xs font-jakarta" style={{ color: 'var(--color-text-secondary)' }}>
+                        {engagementData.map((data) => (
+                            <span key={`${data.month}-${data.year}`} className="flex-1 text-center">
+                                {data.month}{data.year !== new Date().getFullYear() ? ` ${data.year}` : ''}
+                            </span>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -296,45 +361,49 @@ export default function ClientOverview() {
 
              {/* Session History Content */}
         {activeTab === 'Sessions' && (
-          <div className="mt-6 space-y-6 bg-white-darkest rounded-lg border border-grey-lightest p-4 sm:p-6 mx-4 sm:mx-6">
-            <h3 className="font-plus font-normal text-base leading-4 tracking-normal text-[#333333]">Session History</h3>
+          <div className="p-4 mx-4 mt-6 space-y-6 border rounded-lg sm:p-6 sm:mx-6" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
+            <h3 className="text-base font-normal leading-4 tracking-normal font-plus" style={{ color: 'var(--color-text-primary)' }}>Session History</h3>
             
             {/* Session Cards */}
             <div className="space-y-3">
               {sessionData.map((session) => (
-                <div key={session.id} className="bg-white-darkest rounded-lg border border-grey-lightest p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start sm:items-center gap-4">
+                <div key={session.id} className="p-3 border rounded-lg sm:p-4" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
+                  <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                    <div className="flex items-start gap-4 sm:items-center">
                       <div className="text-center w-[80px] sm:w-[96px] h-[40px] sm:h-[43px] flex-shrink-0">
-                        <p className="font-plus font-normal text-sm leading-[21px] tracking-normal text-[#333333]">{session.date}</p>
-                        <p className="font-plus font-normal text-xs leading-[18px] tracking-normal text-grey-mid">{session.time}</p>
+                        <p className="font-plus font-normal text-sm leading-[21px] tracking-normal" style={{ color: 'var(--color-text-primary)' }}>{session.date}</p>
+                        <p className="font-plus font-normal text-xs leading-[18px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>{session.time}</p>
                       </div>
-                      <div className="hidden sm:block w-px h-12 bg-grey-lightest"></div>
+                      <div className="hidden w-px h-12 sm:block" style={{ backgroundColor: 'var(--color-border-primary)' }}></div>
                       <div className="flex flex-col justify-center flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <p className="font-jakarta text-sm font-medium text-[#333333] truncate">{session.type}</p>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                          <p className="text-sm font-medium truncate font-jakarta" style={{ color: 'var(--color-text-primary)' }}>{session.type}</p>
                           <span className={`w-[75px] lg:w-auto px-2 py-[2px] font-plus font-medium text-xs leading-4 tracking-normal rounded-[10px] inline-flex items-center ${
-                            session.status === 'scheduled' 
-                              ? 'bg-[#E0F7FA] text-[#00BCD4]' 
-                              : 'bg-[#E6F0EA] text-[#348958]'
-                          }`}>
+                            session.status === 'scheduled'
+                              ? ''
+                              : ''
+                          }`} style={{
+                            backgroundColor: session.status === 'scheduled' ? 'var(--color-info)' : 'var(--color-success)',
+                            color: 'var(--color-text-inverse)',
+                            opacity: 0.9
+                          }}>
                             {session.status}
                           </span>
                         </div>
-                        <p className="font-plus font-normal text-sm leading-6 tracking-normal text-grey-mid">{session.duration}</p>
+                        <p className="text-sm font-normal leading-6 tracking-normal font-plus" style={{ color: 'var(--color-text-secondary)' }}>{session.duration}</p>
                         {session.message && (
-                          <p className="font-sans font-normal italic text-sm leading-6 tracking-normal text-grey-mid mt-1 line-clamp-2">"{session.message}"</p>
+                          <p className="mt-1 font-sans text-sm italic font-normal leading-6 tracking-normal line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>{"\"" + session.message + "\""}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center flex-shrink-0 gap-1">
                       {session.status === 'scheduled' ? (
-                        <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-primary text-white-darkest rounded-lg font-jakarta font-medium text-sm hover:bg-primary-darkest transition-colors">
+                        <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-lg sm:px-4 font-jakarta hover:opacity-90" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}>
                           <Video className="w-4 h-4" />
                           <span className="hidden sm:inline">Join</span>
                         </button>
                       ) : (
-                        <span className="text-[#EB8A14] text-sm font-medium">{session.rating} ★</span>
+                        <span className="text-sm font-medium" style={{ color: 'var(--color-warning)' }}>{session.rating} ★</span>
                       )}
                     </div>
                   </div>
@@ -346,41 +415,9 @@ export default function ClientOverview() {
 
 
          {activeTab === 'Notes' && (
-          <div className="space-y-6 pt-6 mx-4 sm:mx-6">
-            {/* Add New Note Section */}
-            <div className="bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.1),_0_1px_3px_0_rgba(0,0,0,0.1)]">
-              <h3 className="font-jakarta font-normal text-base leading-4 tracking-normal">Add New Note</h3>
-              <textarea
-                className="w-full bg-[#F5F5F5] p-3 sm:p-4 h-[64px] sm:h-auto border-[0.8px] border-[#00000000] rounded-lg font-jakarta font-normal text-sm leading-5 text-[#333333] resize-none focus:outline-none focus:ring-2 focus:ring-primary-primary focus:border-transparent"
-                rows="3"
-                placeholder="Write your private coaching notes here... (These are only visible to you and will be anonymized in exports)"
-              ></textarea>
-              <div className="flex justify-end mt-4">
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#334EAC] text-white-darkest font-jakarta text-sm font-medium rounded-lg hover:bg-[#2a3d8a] transition-colors">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13.3333 5.33331V12.6666C13.3333 13.0202 13.1894 13.3594 12.9393 13.6095C12.6892 13.8596 12.35 14 11.9967 14H4.00333C3.64999 14 3.31081 13.8596 3.0607 13.6095C2.81059 13.3594 2.66666 13.0202 2.66666 12.6666V3.33331C2.66666 2.97969 2.81059 2.64051 3.0607 2.3904C3.31081 2.14029 3.64999 2 4.00333 2H10L13.3333 5.33331Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M8 7.33331V10.6666" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M6.66666 9.33331H9.33333" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="hidden sm:inline">Save Note</span>
-                  <span className="sm:hidden">Save</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Previous Notes Section */}
-            <div className="space-y-4 bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.1),_0_1px_3px_0_rgba(0,0,0,0.1)]">
-              <h3 className="font-outfit font-semibold text-base sm:text-[18px] leading-5 sm:leading-[18px] tracking-[0.18px] text-[#333333]">Previous Notes</h3>
-              
-              {/* Note Card */}
-              <div className="bg-[#F5F5F5] rounded-xl border border-[0.8px] border-[#00000000] p-3 sm:p-4 space-y-2">
-                <p className="font-jakarta text-sm text-[#333333] line-clamp-3">
-                  Working on leadership transition. Confident and making good progress.
-                </p>
-                <p className="font-jakarta text-xs text-grey-mid">
-                  Oct 20, 2025, 11:00 AM
-                </p>
-              </div>
+          <div className="pt-6 mx-4 space-y-6 sm:mx-6">
+            <div className="p-4 border bg-[var(--color-bg-primary)] rounded-xl border-[var(--color-border)] sm:p-6">
+              <p className="font-jakarta text-[var(--color-text-secondary)]">This feature is for phase 2</p>
             </div>
           </div>
         )}
@@ -394,8 +431,8 @@ export default function ClientOverview() {
        
 
         {activeTab === 'Messages' && (
-          <div className="bg-white-darkest rounded-xl border border-grey-lightest p-4 sm:p-6 mx-4 sm:mx-6">
-            <p className="font-jakarta text-grey-mid">Messages content will be displayed here.</p>
+          <div className="p-4 mx-4 border bg-[var(--color-bg-primary)] rounded-xl border-[var(--color-border)] sm:p-6 sm:mx-6">
+            <p className="font-jakarta text-[var(--color-text-secondary)]">This feature is for phase 2</p>
           </div>
         )}
       </div>

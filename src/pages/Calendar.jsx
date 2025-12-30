@@ -107,15 +107,6 @@ export default function Calendar() {
 
         <main className="flex-1 p-4 overflow-y-auto sm:p-6">
           <div className="mx-auto space-y-6 max-w-7xl">
-            {/* Page Header */}
-            <div>
-              <h1 className="mb-1 text-h2" style={{ color: 'var(--color-text-primary)' }}>
-                Calendar
-              </h1>
-              <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                Manage your schedule and consultations
-              </p>
-            </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -260,7 +251,7 @@ export default function Calendar() {
                         <div 
                           key={i}
                           className="p-3 text-sm font-medium text-center"
-                          style={{ color: isToday ? '#4A5EAF' : 'var(--color-text-primary)' }}
+                          style={{ color: isToday ? 'var(--color-primary)' : 'var(--color-text-primary)' }}
                         >
                           {dayName}, {monthDay}
                         </div>
@@ -312,16 +303,16 @@ export default function Calendar() {
                               className="relative p-1 border-r min-h-[60px]"
                               style={{ 
                                 borderColor: 'var(--color-border-primary)',
-                                backgroundColor: isToday ? 'rgba(74, 94, 175, 0.02)' : 'transparent'
+                                backgroundColor: isToday ? 'var(--color-calendar-today-bg)' : 'transparent'
                               }}
                             >
                               {/* Consultations */}
                               {cellConsultations.map(consultation => {
                                 const statusColor = consultation.booking?.status === 'CONFIRMED' 
-                                  ? { bg: 'rgba(147, 197, 253, 0.3)', border: 'rgba(59, 130, 246, 0.5)', text: '#334EAC' }
+                                  ? { bg: 'var(--color-calendar-confirmed-bg)', border: 'var(--color-calendar-confirmed-border)', text: 'var(--color-calendar-confirmed-text)' }
                                   : consultation.booking?.status === 'COMPLETED'
-                                  ? { bg: 'rgba(134, 239, 172, 0.3)', border: 'rgba(34, 197, 94, 0.5)', text: '#15803d' }
-                                  : { bg: 'rgba(251, 191, 36, 0.3)', border: 'rgba(245, 158, 11, 0.5)', text: '#b45309' };
+                                  ? { bg: 'var(--color-calendar-completed-bg)', border: 'var(--color-calendar-completed-border)', text: 'var(--color-calendar-completed-text)' }
+                                  : { bg: 'var(--color-calendar-pending-bg)', border: 'var(--color-calendar-pending-border)', text: 'var(--color-calendar-pending-text)' };
                                 
                                 return (
                                   <div 

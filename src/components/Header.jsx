@@ -1,4 +1,5 @@
 import { Menu, Bell, User } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 function Header({ onMenuClick, title }) {
   // const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -39,8 +40,11 @@ function Header({ onMenuClick, title }) {
         )}
       </div>
 
-      {/* Right side - Notifications and user profile */}
+      {/* Right side - Theme toggle, Notifications and user profile */}
       <div className="flex items-center gap-3">
+        {/* Theme Toggle */}
+        {/* <ThemeToggle /> */}
+
         {/* Notifications */}
         <button
           className="relative p-2 rounded-lg hover:opacity-80"

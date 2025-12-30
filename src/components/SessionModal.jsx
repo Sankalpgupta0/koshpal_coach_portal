@@ -18,7 +18,7 @@ export default function SessionModal({ session, isOpen, onClose }) {
   
   // Determine badge styling based on status
   const badgeClass = session.badge === 'Confirmed' 
-    ? ' bg-[#17A2B8]/[0.125] text-secondary-primary' 
+    ? 'bg-[var(--color-info-bg)] text-[var(--color-secondary)]' 
     : 'bg-grey-lightest text-grey-dark';
 
   // Generate meeting link (in real app, this would come from the session data)
@@ -38,7 +38,7 @@ export default function SessionModal({ session, isOpen, onClose }) {
       {/* Backdrop */}
       <div 
         className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        style={{ backgroundColor: 'var(--color-overlay)' }}
         onClick={onClose}
       ></div>
       

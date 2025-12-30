@@ -7,7 +7,7 @@ export default function SessionCard({ startTime, endTime, clientName, sessionTyp
   // Determine badge styling based on status
   const getBadgeStyle = () => {
     if (badge === 'Confirmed') {
-      return { backgroundColor: 'rgba(23, 162, 184, 0.125)', color: 'var(--color-secondary)' };
+      return { backgroundColor: 'var(--color-info-bg)', color: 'var(--color-secondary)' };
     }
     return { backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' };
   };
@@ -57,12 +57,12 @@ export default function SessionCard({ startTime, endTime, clientName, sessionTyp
           {/* Meta Tags - Center on mobile, left on desktop */}
           <div className="flex flex-wrap gap-2 justify-center sm:justify-start mt-[10px]">
             {isVirtual && (
-              <div className="inline-flex items-center border px-2 py-1 text-xs font-jakarta font-600 rounded-md gap-1" style={{ borderColor: 'var(--color-secondary)', color: 'var(--color-secondary)', backgroundColor: 'rgba(23, 162, 184, 0.125)' }}>
+              <div className="inline-flex items-center border px-2 py-1 text-xs font-jakarta font-600 rounded-md gap-1" style={{ borderColor: 'var(--color-secondary)', color: 'var(--color-secondary)', backgroundColor: 'var(--color-info-bg)' }}>
                 <Video className='h-3 w-3 ' /> <p>Virtual</p>
               </div>
             )}
             {duration && (
-              <div className="inline-flex items-center border px-2 py-1 text-xs font-jakarta font-600 rounded-md gap-1" style={{ borderColor: 'var(--color-warning)', color: 'var(--color-warning)', backgroundColor: 'rgba(245, 160, 56, 0.1)' }}>
+              <div className="inline-flex items-center border px-2 py-1 text-xs font-jakarta font-600 rounded-md gap-1" style={{ borderColor: 'var(--color-warning)', color: 'var(--color-warning)', backgroundColor: 'var(--color-warning-bg)' }}>
                 <Clock className='h-3 w-3 ' /> <p>{duration}</p>
               </div>
             )}

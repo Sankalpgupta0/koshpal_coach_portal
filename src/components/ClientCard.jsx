@@ -5,7 +5,7 @@ export default function ClientCard({ client }) {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
-    navigate('/client-overview');
+    navigate('/client-overview', { state: { client } });
   };
 
   return (

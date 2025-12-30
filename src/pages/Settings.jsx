@@ -179,7 +179,7 @@ export default function Settings() {
     return (
       <main className="flex items-center justify-center flex-1 p-4 overflow-y-auto sm:p-6 md:p-8">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 border-4 border-t-transparent rounded-full animate-spin" 
+          <div className="w-16 h-16 mx-auto mb-4 border-4 rounded-full border-t-transparent animate-spin" 
                style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}></div>
           <p style={{ color: 'var(--color-text-secondary)' }}>Loading settings...</p>
         </div>
@@ -211,9 +211,7 @@ export default function Settings() {
         <main className="flex-1 p-4 overflow-y-auto sm:p-6">
           <div className="mx-auto space-y-6 max-w-7xl">
             <div>
-              <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                Settings
-              </h1>
+             
               <p className="mb-6 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                 Manage your account and preferences
               </p>

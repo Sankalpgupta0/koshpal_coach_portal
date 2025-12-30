@@ -3,9 +3,9 @@ import { Download } from "lucide-react";
 export default function InvoiceRow({ invoice }) {
   const getStatusStyle = (status) => {
     if (status === 'Paid') {
-      return { backgroundColor: 'rgba(128, 181, 151, 0.2)', color: 'var(--color-success)' };
+      return { backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)' };
     }
-    return { backgroundColor: 'rgba(245, 160, 56, 0.2)', color: 'var(--color-warning)' };
+    return { backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)' };
   };
 
   return (

@@ -41,11 +41,13 @@
   --color-success-light: #9ac4ab;
   --color-success-dark: #67a682;
   --color-success-darkest: #1b7a43;
+  --color-success-bg: rgba(128, 181, 151, 0.2);
 
   /* Semantic Colors - Orange */
   --color-warning: #f5a038;
   --color-warning-light: #fcc178;
   --color-warning-dark: #d47602;
+  --color-warning-bg: rgba(245, 160, 56, 0.2);
 
   /* Semantic Colors - Red */
   --color-error: #f55a51;
@@ -53,6 +55,21 @@
   --color-error-dark: #d5332a;
 
   --color-info: #334eac;
+  --color-info-bg: rgba(23, 162, 184, 0.125);
+
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Calendar Colors */
+  --color-calendar-today-bg: rgba(74, 94, 175, 0.02);
+  --color-calendar-confirmed-bg: rgba(147, 197, 253, 0.3);
+  --color-calendar-confirmed-border: rgba(59, 130, 246, 0.5);
+  --color-calendar-confirmed-text: #334eac;
+  --color-calendar-completed-bg: rgba(134, 239, 172, 0.3);
+  --color-calendar-completed-border: rgba(34, 197, 94, 0.5);
+  --color-calendar-completed-text: #15803d;
+  --color-calendar-pending-bg: rgba(251, 191, 36, 0.3);
+  --color-calendar-pending-border: rgba(245, 158, 11, 0.5);
+  --color-calendar-pending-text: #b45309;
 
   /* Background Colors - Light Mode */
   --color-bg-primary: #ffffff;
@@ -146,9 +163,66 @@
   --color-input-placeholder: #94a3b8;
 
   --color-primary: #60a5fa;
-  --color-primary-dark: #3b82f6;
+  --color-primary-darkest: #1e40af;
+  --color-primary-mid: #93c5fd;
+  --color-primary-light: #dbeafe;
+  --color-primary-lightest: #eff6ff;
+
   --color-secondary: #22d3ee;
-  --color-secondary-dark: #06b6d4;
+  --color-secondary-darkest: #0891b2;
+  --color-secondary-mid: #67e8f9;
+  --color-secondary-light: #a5f3fc;
+  --color-secondary-lightest: #ecfeff;
+
+  --color-black-darkest: #ffffff;
+  --color-black-dark: #f1f5f9;
+  --color-black-mid: #e2e8f0;
+  --color-black-light: #cbd5e1;
+  --color-black-lightest: #94a3b8;
+  
+  --color-grey-darkest: #f1f5f9;
+  --color-grey-dark: #e2e8f0;
+  --color-grey-mid: #cbd5e1;
+  --color-grey-light: #94a3b8;
+  --color-grey-lightest: #475569;
+  
+  --color-white-darkest: #0f172a;
+  --color-white-dark: #1e293b;
+  --color-white-mid: #334155;
+  --color-white-light: #475569;
+  --color-white-lightest: #64748b;
+
+  --color-success: #34d399;
+  --color-success-light: #6ee7b7;
+  --color-success-dark: #10b981;
+  --color-success-darkest: #047857;
+  --color-success-bg: rgba(16, 185, 129, 0.2);
+
+  --color-warning: #fbbf24;
+  --color-warning-light: #fcd34d;
+  --color-warning-dark: #f59e0b;
+  --color-warning-bg: rgba(251, 191, 36, 0.2);
+
+  --color-error: #f87171;
+  --color-error-light: #fca5a5;
+  --color-error-dark: #ef4444;
+
+  --color-info: #60a5fa;
+  --color-info-bg: rgba(96, 165, 250, 0.125);
+
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Calendar Colors */
+  --color-calendar-today-bg: rgba(96, 165, 250, 0.02);
+  --color-calendar-confirmed-bg: rgba(147, 197, 253, 0.3);
+  --color-calendar-confirmed-border: rgba(59, 130, 246, 0.5);
+  --color-calendar-confirmed-text: #60a5fa;
+  --color-calendar-completed-bg: rgba(134, 239, 172, 0.3);
+  --color-calendar-completed-border: rgba(34, 197, 94, 0.5);
+  --color-calendar-completed-text: #10b981;
+  --color-calendar-pending-bg: rgba(251, 191, 36, 0.3);
+  --color-calendar-pending-border: rgba(245, 158, 11, 0.5);
+  --color-calendar-pending-text: #f59e0b;
 }
 
 /* Base Typography Styles */

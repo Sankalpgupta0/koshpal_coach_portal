@@ -31,7 +31,7 @@ export default function RescheduleModal({ session, isOpen, onClose }) {
   
   // Determine badge styling based on status
   const badgeClass = session.badge === 'Confirmed' 
-    ? ' bg-[#17A2B8]/[0.125] text-secondary-primary' 
+    ? 'bg-[var(--color-info-bg)] text-[var(--color-secondary)]' 
     : 'bg-grey-lightest text-grey-dark';
 
   // Available time slots
@@ -109,12 +109,12 @@ export default function RescheduleModal({ session, isOpen, onClose }) {
       {/* Backdrop */}
       <div 
         className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        style={{ backgroundColor: 'var(--color-overlay)' }}
         onClick={handleClose}
       ></div>
       
       {/* Modal */}
-      <div className="relative rounded-2xl shadow-xl max-w-2xl overflow-hidden p-6 space-y-6" style={{ backgroundColor: '#ffffff', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="relative rounded-2xl shadow-xl max-w-2xl overflow-hidden p-6 space-y-6" style={{ backgroundColor: 'var(--color-bg-primary)', maxHeight: '90vh', overflowY: 'auto' }}>
         {/* Header */}
         <div className="">
           <div className="flex items-center justify-between">

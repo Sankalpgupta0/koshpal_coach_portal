@@ -199,14 +199,14 @@ export default function Dashboard() {
           <div className="mx-auto space-y-6 max-w-7xl">
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
+                <div className="w-12 h-12 border-b-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)' }}></div>
               </div>
             ) : error ? (
-              <div className="text-center py-20">
+              <div className="py-20 text-center">
                 <p style={{ color: 'var(--color-error)' }}>{error}</p>
                 <button
                   onClick={fetchDashboardData}
-                  className="mt-4 px-4 py-2 rounded-lg"
+                  className="px-4 py-2 mt-4 rounded-lg"
                   style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
                 >
                   Try Again
@@ -273,7 +273,12 @@ export default function Dashboard() {
                   Today's Schedule
                 </h2>
                 <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  Saturday, October 11, 2025
+                  {new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
                 </p>
               </div>
               <span 

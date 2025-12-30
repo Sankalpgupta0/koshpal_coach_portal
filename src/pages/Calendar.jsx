@@ -13,8 +13,10 @@ export default function Calendar() {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     const dayOfWeek = today.getDay();
+    // Adjust for Monday as start of week (Monday = 1, Sunday = 0, so Sunday becomes 7)
+    const adjustedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - dayOfWeek);
+    startOfWeek.setDate(today.getDate() - adjustedDayOfWeek + 1); // +1 to start on Monday
     startOfWeek.setHours(0, 0, 0, 0);
     return startOfWeek;
   });
@@ -37,18 +39,24 @@ export default function Calendar() {
       try {
         setLoading(true);
         const [consultationsData, statsData] = await Promise.all([
-          getMyConsultations(), // Get all consultations
+          getMyConsultations('all'), // Get all consultations for calendar view
           getConsultationStats()
         ]);
         
         // Filter consultations for the current week
         const weekEnd = new Date(currentWeekStart);
         weekEnd.setDate(currentWeekStart.getDate() + 7);
+        console.log("consultationsData", consultationsData);
+        console.log("currentWeekStart", currentWeekStart);
+        console.log("weekEnd", weekEnd);
         
         const weekConsultations = consultationsData.filter(consultation => {
           const slotDate = new Date(consultation.date);
-          return slotDate >= currentWeekStart && slotDate < weekEnd;
+          const isInWeek = slotDate >= currentWeekStart && slotDate < weekEnd;
+          return isInWeek;
         });
+        
+        console.log("weekConsultations", weekConsultations);
         
         setConsultations(weekConsultations);
         setStats(statsData);
@@ -204,8 +212,10 @@ export default function Calendar() {
                     onClick={() => {
                       const today = new Date();
                       const dayOfWeek = today.getDay();
+                      // Adjust for Monday as start of week (Monday = 1, Sunday = 0, so Sunday becomes 7)
+                      const adjustedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
                       const startOfWeek = new Date(today);
-                      startOfWeek.setDate(today.getDate() - dayOfWeek);
+                      startOfWeek.setDate(today.getDate() - adjustedDayOfWeek + 1); // +1 to start on Monday
                       startOfWeek.setHours(0, 0, 0, 0);
                       setCurrentWeekStart(startOfWeek);
                     }}
@@ -241,11 +251,13 @@ export default function Calendar() {
                   >
                     <div className="p-3"></div>
                     {Array.from({ length: 7 }, (_, i) => {
-                      const date = new Date(currentWeekStart);
-                      date.setDate(currentWeekStart.getDate() + i);
+                      const date = new Date(currentWeekStart.getTime() + i * 24 * 60 * 60 * 1000);
                       const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-                      const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                      const isToday = date.toDateString() === new Date().toDateString();
+                      const dayNumber = date.getDate();
+                      const today = new Date();
+                      const isToday = date.getDate() === today.getDate() && 
+                                     date.getMonth() === today.getMonth() && 
+                                     date.getFullYear() === today.getFullYear();
                       
                       return (
                         <div 
@@ -253,7 +265,9 @@ export default function Calendar() {
                           className="p-3 text-sm font-medium text-center"
                           style={{ color: isToday ? 'var(--color-primary)' : 'var(--color-text-primary)' }}
                         >
-                          {dayName}, {monthDay}
+                          {dayName}
+                          <br />
+                          {dayNumber}
                         </div>
                       );
                     })}
@@ -261,7 +275,7 @@ export default function Calendar() {
 
                   {/* Time Slots */}
                   <div className="relative">
-                    {['8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM'].map((timeSlot, timeIndex) => (
+                    {['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'].map((timeSlot, timeIndex) => (
                       <div 
                         key={timeIndex}
                         className="grid grid-cols-8 border-b"
@@ -288,13 +302,42 @@ export default function Calendar() {
                           const cellConsultations = consultations.filter(consultation => {
                             const slotDate = new Date(consultation.date);
                             const startTime = new Date(consultation.startTime);
-                            const hour = startTime.getHours();
-                            const period = hour >= 12 ? 'PM' : 'AM';
-                            const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                            const consultationTimeSlot = `${displayHour} ${period}`;
+                            const consultationHour = startTime.getHours();
                             
-                            return slotDate.toDateString() === cellDate.toDateString() && 
-                                   consultationTimeSlot === timeSlot;
+                            // Map timeSlot to hour number
+                            let slotHour;
+                            switch (timeSlot) {
+                              case '12 AM': slotHour = 0; break;
+                              case '1 AM': slotHour = 1; break;
+                              case '2 AM': slotHour = 2; break;
+                              case '3 AM': slotHour = 3; break;
+                              case '4 AM': slotHour = 4; break;
+                              case '5 AM': slotHour = 5; break;
+                              case '6 AM': slotHour = 6; break;
+                              case '7 AM': slotHour = 7; break;
+                              case '8 AM': slotHour = 8; break;
+                              case '9 AM': slotHour = 9; break;
+                              case '10 AM': slotHour = 10; break;
+                              case '11 AM': slotHour = 11; break;
+                              case '12 PM': slotHour = 12; break;
+                              case '1 PM': slotHour = 13; break;
+                              case '2 PM': slotHour = 14; break;
+                              case '3 PM': slotHour = 15; break;
+                              case '4 PM': slotHour = 16; break;
+                              case '5 PM': slotHour = 17; break;
+                              case '6 PM': slotHour = 18; break;
+                              case '7 PM': slotHour = 19; break;
+                              case '8 PM': slotHour = 20; break;
+                              case '9 PM': slotHour = 21; break;
+                              case '10 PM': slotHour = 22; break;
+                              case '11 PM': slotHour = 23; break;
+                              default: slotHour = -1;
+                            }
+                            
+                            const dateMatch = slotDate.toDateString() === cellDate.toDateString();
+                            const timeMatch = consultationHour === slotHour;
+                            
+                            return dateMatch && timeMatch;
                           });
                           
                           return (
@@ -308,6 +351,13 @@ export default function Calendar() {
                             >
                               {/* Consultations */}
                               {cellConsultations.map(consultation => {
+                                const startTime = new Date(consultation.startTime);
+                                const timeString = startTime.toLocaleTimeString('en-US', { 
+                                  hour: 'numeric', 
+                                  minute: '2-digit', 
+                                  hour12: true 
+                                });
+                                
                                 const statusColor = consultation.booking?.status === 'CONFIRMED' 
                                   ? { bg: 'var(--color-calendar-confirmed-bg)', border: 'var(--color-calendar-confirmed-border)', text: 'var(--color-calendar-confirmed-text)' }
                                   : consultation.booking?.status === 'COMPLETED'
@@ -328,6 +378,9 @@ export default function Calendar() {
                                       <span className="font-semibold" style={{ color: statusColor.text }}>
                                         {consultation.booking?.employee?.fullName || 'Client'}
                                       </span>
+                                    </div>
+                                    <div className="text-xs" style={{ color: statusColor.text }}>
+                                      {consultation.booking?.employee?.fullName || 'Client'}
                                     </div>
                                     <div className="text-xs" style={{ color: statusColor.text }}>
                                       {consultation.booking?.status || 'N/A'}

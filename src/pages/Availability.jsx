@@ -63,12 +63,14 @@ export default function Availability() {
   const SlotRow = ({ slot, slotIndex, day, timeOptions, formatTime, calculateDuration, updateSlotTime, deleteExistingSlot, removeSlot, convertToIST }) => {
     const duration = calculateDuration(slot.start, slot.end);
     const isExistingSlot = slot.id && slot.status;
+    // Make slot read-only if it's an existing saved slot (regardless of status)
+    const isReadOnly = isExistingSlot;
 
     return (
       <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--color-bg-card)' }}>
         <div className="flex items-center gap-2 h-[36px] flex-1">
           {/* Start Time */}
-          {slot.status === 'BOOKED' ? (
+          {isReadOnly ? (
             <div
               className="px-2 sm:px-3 w-[100px] sm:w-[128px] border rounded-[10px] font-jakarta text-xs sm:text-sm flex items-center"
               style={{
@@ -101,7 +103,7 @@ export default function Availability() {
           <span className="font-jakarta" style={{ color: 'var(--color-text-tertiary)' }}>to</span>
 
           {/* End Time */}
-          {slot.status === 'BOOKED' ? (
+          {isReadOnly ? (
             <div
               className="px-2 sm:px-3 w-[100px] sm:w-[128px] border rounded-[10px] font-jakarta text-xs sm:text-sm flex items-center"
               style={{
@@ -213,14 +215,17 @@ export default function Availability() {
           // Group slots by time and keep the first occurrence with status
           const timeGroups = {};
           slots.forEach(slot => {
-            const timeKey = `${slot.start}-${slot.end}`;
-            if (!timeGroups[timeKey]) {
-              timeGroups[timeKey] = {
-                start: slot.start,
-                end: slot.end,
-                id: slot.id,
-                status: slot.status,
-              };
+            // Validate that slot has proper time values before adding
+            if (slot.start && slot.end && slot.start !== '0:00' && slot.start !== '00:00') {
+              const timeKey = `${slot.start}-${slot.end}`;
+              if (!timeGroups[timeKey]) {
+                timeGroups[timeKey] = {
+                  start: slot.start,
+                  end: slot.end,
+                  id: slot.id,
+                  status: slot.status,
+                };
+              }
             }
           });
           newSchedule[capitalizedWeekday].slots = Object.values(timeGroups);

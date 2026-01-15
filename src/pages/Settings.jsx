@@ -30,6 +30,9 @@ export default function Settings() {
   const [originalTimezone, setOriginalTimezone] = useState('Asia/Kolkata');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+   const [removeImage, setRemoveImage] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [profilePicture, setProfilePicture] = useState(null)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -55,12 +58,21 @@ export default function Settings() {
       // Try to get profile from API
       try {
         const profile = await getMyProfile();
+
+        // Split name into first and last name
+        const nameParts = profile.fullName?.split(' ') || ['', ''];
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
         const profileData = {
-          firstName: profile.firstName || '',
-          lastName: profile.lastName || '',
+          firstName,
+          lastName,
           email: profile.email || user.email || '',
-          phone: profile.phoneNumber || '',
+          phone: profile.phone|| '',
         };
+         // Set profile picture if available
+      if (profile.profilePhoto) {
+        setProfilePicture(profile.profilePhoto)
+      }
         setFormData(profileData);
         setOriginalData(profileData);
       } catch (err) {
@@ -124,26 +136,52 @@ export default function Settings() {
     }
   };
 
+  
+
   const handleSaveChanges = async () => {
+      // Validation
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      // showToast('First name and last name are required', 'error');
+      return;
+    }
+    
     try {
       setSaving(true);
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
       
-      // Update profile via API
-      await updateMyProfile({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phoneNumber: formData.phone,
-      });
+      const fd = new FormData()
+      fd.append('fullName', fullName)
+      fd.append('phone', formData.phone)
+      // Handle profile picture update
+      if (selectedFile) {
+        fd.append('image', selectedFile) //  FILE, not string
+      }
+      await updateMyProfile(fd);
+      
+      // Update localStorage cache with new data
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          user.name = fullName;
+          user.phone = formData.phone;
+          localStorage.setItem('user', JSON.stringify(user));
+        } catch (e) {
+          console.error('Error updating localStorage:', e);
+        }
+      }
       
       setOriginalData(formData);
-      alert('Changes saved successfully!');
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      alert('Error saving changes. Please try again.');
+      // showToast('Changes saved successfully!', 'success');
+      console.log('Profile updated successfully');
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      // showToast(error.response?.data?.message || 'Failed to save changes', 'error');
     } finally {
       setSaving(false);
     }
   };
+
 
   const handleCancel = () => {
     setFormData(originalData);
@@ -186,6 +224,41 @@ export default function Settings() {
       </main>
     );
   }
+
+  const handleImageChange = (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  // Check file is image
+  if (!file.type.startsWith('image/')) {
+    // setToast({ message: 'Please select an image file', type: 'error' });
+    return;
+  }
+
+  // Size check (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    // setToast({ message: 'Image size should be less than 5MB', type: 'error' });
+    return;
+  }
+
+  // Allowed formats
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+  if (!allowedTypes.includes(file.type)) {
+    // setToast({ message: 'Only JPG, PNG, JPEG allowed', type: 'error' });
+    return;
+  }
+
+  // Save file
+  setSelectedFile(file);
+  setRemoveImage(false);
+
+  // Preview image
+  const reader = new FileReader();
+  reader.onload = () => {
+    setProfilePicture(reader.result); // ✅ NO "as string"
+  };
+  reader.readAsDataURL(file);
+};
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -239,11 +312,21 @@ export default function Settings() {
           style={{ borderColor: 'var(--color-border-primary)' }}
         >
           {/* Avatar */}
-          <div
-            className="flex items-center justify-center w-20 h-20 text-2xl font-bold text-white rounded-full"
-            style={{ backgroundColor: 'var(--color-primary)' }}
-          >
-            <span>{getInitials(formData.firstName, formData.lastName)}</span>
+              <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-2xl font-bold text-white-darkest" style={{ backgroundColor: profilePicture ? 'transparent' : 'var(--color-primary)' }}>
+                {profilePicture ? (
+                  <img 
+                    src={profilePicture} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // If image fails to load, hide it and show initials
+                      e.currentTarget.style.display = 'none'
+                      setProfilePicture(null)
+                    }}
+                  />
+                ) : (
+                  <span>{getInitials(formData.firstName, formData.lastName)}</span>
+                )}
           </div>
 
           {/* Name and Email */}
@@ -254,10 +337,18 @@ export default function Settings() {
             <p className="mb-3 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               {formData.email}
             </p>
-            <button
-              className="px-4 py-2 text-sm font-semibold text-white transition-opacity rounded-lg hover:opacity-90"
-              style={{ backgroundColor: 'var(--color-primary)' }}
-            >
+            <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="profile-image-input"
+                />
+                <button
+                  onClick={() => document.getElementById('profile-image-input')?.click()}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white-darkest hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: 'var(--color-primary)' }}
+                >
               Change Photo
             </button>
           </div>
@@ -387,13 +478,13 @@ export default function Settings() {
           <button
             onClick={handleSaveChanges}
             disabled={saving}
-            className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-opacity rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white-darkest transition-opacity rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: 'var(--color-primary)' }}
           >
             {saving && (
               <div
                 className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin"
-                style={{ borderColor: 'white', borderTopColor: 'transparent' }}
+                style={{ borderColor: 'white-darkest', borderTopColor: 'transparent' }}
               />
             )}
             {saving ? 'Saving...' : 'Save Changes'}
@@ -457,13 +548,13 @@ export default function Settings() {
             <button
               onClick={handleSaveTimezone}
               disabled={saving || timezone === originalTimezone}
-              className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-opacity rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white-darkest transition-opacity rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: 'var(--color-primary)' }}
             >
               {saving && (
                 <div
                   className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin"
-                  style={{ borderColor: 'white', borderTopColor: 'transparent' }}
+                  style={{ borderColor: 'white-darkest', borderTopColor: 'transparent' }}
                 />
               )}
               Save Timezone
@@ -513,7 +604,7 @@ export default function Settings() {
                 }}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white-darkest transition-transform ${
                     isDarkMode ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
@@ -533,7 +624,7 @@ export default function Settings() {
             className="flex items-center justify-center w-full gap-2 px-6 py-3 text-sm font-semibold transition-opacity rounded-lg sm:w-auto hover:opacity-90"
             style={{
               backgroundColor: 'var(--color-error)',
-              color: 'white',
+              color: 'white-darkest',
             }}
           >
             <LogOut className="w-5 h-5" />

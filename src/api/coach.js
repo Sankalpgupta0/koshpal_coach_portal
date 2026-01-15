@@ -118,8 +118,13 @@ export const getMyProfile = async () => {
  * Update coach profile
  * PATCH /api/v1/coach/profile
  */
-export const updateMyProfile = async (profileData) => {
-  const response = await axiosInstance.patch('/coach/profile', profileData);
+export const updateMyProfile = async (formData) => {
+  const response = await axiosInstance.patch('/coach/profile',
+    formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

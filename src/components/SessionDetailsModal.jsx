@@ -146,17 +146,18 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                             Topics Covered
                         </h3>
                         <div className="flex flex-wrap gap-2">
-
-                            <span
-                                className="px-3 py-1.5 rounded-full  px-2 py-1 rounded-[22px] border-[1px] border-[#334EAC]  font-jakarta text-xs leading-4 font-medium text-primary-primary "
-                            >
-                                Leadership
-                            </span>
-                            <span
-                                className="px-3 py-1.5 rounded-full px-2 py-1 rounded-[22px] border-[1px] border-[#334EAC] font-jakarta text-xs leading-4 font-medium text-primary-primary "
-                            >
-                                Team dynamics
-                            </span>
+                            {session.topicsCovered && session.topicsCovered.length > 0 ? (
+                                session.topicsCovered.map((topic, index) => (
+                                    <span
+                                        key={index}
+                                        className="px-3 py-1.5 rounded-full px-2 py-1 rounded-[22px] border-[1px] border-[#334EAC] font-jakarta text-xs leading-4 font-medium text-primary-primary"
+                                    >
+                                        {topic}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-body-sm text-[#808080]">No topics covered</span>
+                            )}
                         </div>
                     </div>
 

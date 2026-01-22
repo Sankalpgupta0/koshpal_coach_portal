@@ -89,6 +89,7 @@ const mockSessions = {
             duration: '45 min',
             avatar: 'SJ',
             rating: 5,
+            topicsCovered: ['Leadership', 'Team dynamics'],
         },
         {
             id: 9,
@@ -99,6 +100,7 @@ const mockSessions = {
             duration: '45 min',
             avatar: 'SJ',
             rating: 3,
+            topicsCovered: ['Communication', 'Conflict resolution', 'Time management'],
         },
         {
             id: 10,
@@ -109,6 +111,7 @@ const mockSessions = {
             duration: '45 min',
             avatar: 'SJ',
             rating: 5,
+            topicsCovered: ['Career growth', 'Goal setting'],
         },
     ],
 };
@@ -154,6 +157,16 @@ export default function Sessions() {
 
     const currentSessions = mockSessions[activeTab] || [];
 
+    // Helper function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return '';
+        const names = name.trim().split(' ');
+        if (names.length === 1) {
+            return names[0].charAt(0).toUpperCase();
+        }
+        return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+    };
+
     // Render Today/Live sessions with special layout
     const renderTodayLiveSession = (session, index) => {
         if (session.isLive) {
@@ -174,7 +187,7 @@ export default function Sessions() {
                                     color: 'var(--color-primary)',
                                 }}
                             >
-                                {session.avatar}
+                                {getInitials(session.clientName)}
                             </div>
 
                             {/* Client Details with LIVE badge */}
@@ -257,7 +270,7 @@ export default function Sessions() {
                                     color: 'var(--color-primary)',
                                 }}
                             >
-                                {session.avatar}
+                                {getInitials(session.clientName)}
                             </div>
 
                             {/* Client Details */}
@@ -334,9 +347,9 @@ export default function Sessions() {
                 key={session.id}
                 className="flex flex-col rounded-[12px] border border-[#EAEAEA] sm:flex-row sm:items-center justify-between min-h-[48px] py-4 px-4 sm:px-5 mb-6 gap-4"
             >
-                <div className='flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 w-full sm:w-auto'>
+                <div className='flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto'>
                     {/* Left Section - Rating (History only) + Avatar and Client Info */}
-                    <div className="flex items-center gap-3 sm:gap-5">
+                    <div className={`flex items-center gap-3 sm:gap-5 ${isHistory ? 'sm:w-[380px]' : 'sm:w-[280px]'}`}>
                         {/* Rating for History */}
                         {isHistory && session.rating && (
                             <div
@@ -353,17 +366,17 @@ export default function Sessions() {
 
                         {/* Avatar */}
                         <div
-                            className="w-12 h-12 rounded-full flex items-center justify-center font-plusJakarta font-medium text-[20px] leading-[24px] tracking-[0px]"
+                            className="w-12 h-12 rounded-full flex items-center justify-center font-plusJakarta font-medium text-[20px] leading-[24px] tracking-[0px] flex-shrink-0"
                             style={{
                                 backgroundColor: 'var(--color-primary-lightest)',
                                 color: 'var(--color-primary)',
                             }}
                         >
-                            {session.avatar}
+                            {getInitials(session.clientName)}
                         </div>
 
                         {/* Client Details */}
-                        <div>
+                        <div className="flex-1">
                             <h3
                                 className="font-plusJakarta font-normal text-[14px] leading-[20px] tracking-[0.14px]"
                                 style={{ color: 'var(--color-text-primary)' }}
@@ -377,17 +390,17 @@ export default function Sessions() {
                     </div>
 
                     {/* Middle Section - Date/Time */}
-                    <div className="flex items-center gap-2 rounded-[10px] border-[0.8px] border-[#0000000F] h-[39px] px-[10px] w-fit">
+                    <div className="flex items-center gap-2 rounded-[10px] border-[0.8px] border-[#0000000F] h-[39px] px-[10px] w-fit whitespace-nowrap">
                         {isHistory ? (
                             // Date and duration for history
                             <>
-                                <Clock className="w-4 h-4 text-[#334EAC]" />
-                                <span className="text-body-md" style={{ color: 'var(--color-text-primary)' }}>
+                                <Clock className="w-4 h-4 text-[#334EAC] flex-shrink-0" />
+                                <span className="text-body-md whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
                                     {session.date}
                                 </span>
                                 {session.duration && (
                                     <span
-                                        className="px-3 py-1 text-body-sm font-medium ml-2 bg-[#FEF9ED] border border-[#FCC178] rounded-[6px] text-[#EB8A14]"
+                                        className="px-3 py-1 text-body-sm font-medium ml-2 bg-[#FEF9ED] border border-[#FCC178] rounded-[6px] text-[#EB8A14] whitespace-nowrap"
                                     >
                                         {session.duration}
                                     </span>
@@ -396,8 +409,8 @@ export default function Sessions() {
                         ) : (
                             // Regular date/time display
                             <>
-                                <Clock className="w-4 h-4 text-[#334EAC]" />
-                                <span className="text-body-md" style={{ color: 'var(--color-text-primary)' }}>
+                                <Clock className="w-4 h-4 text-[#334EAC] flex-shrink-0" />
+                                <span className="text-body-md whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
                                     {session.date}
                                 </span>
                             </>

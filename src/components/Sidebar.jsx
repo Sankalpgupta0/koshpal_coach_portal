@@ -8,6 +8,7 @@ import {
   Settings,
   X,
   ChevronLeft,
+  BookOpen,
 } from 'lucide-react';
 
 function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
@@ -18,7 +19,7 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/', badge: null },
-    { icon: Users, label: 'Sessions', path: '/sessions', badge: null },
+    { icon: BookOpen, label: 'Sessions', path: '/sessions', badge: null },
     { icon: Users, label: 'Clients', path: '/clients', badge: null },
     { icon: Calendar, label: 'Calendar', path: '/calendar', badge: null },
     { icon: CalendarCheck, label: 'Availability', path: '/availability', badge: null },

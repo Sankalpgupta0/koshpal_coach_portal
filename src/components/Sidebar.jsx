@@ -18,6 +18,7 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/', badge: null },
+    { icon: Users, label: 'Sessions', path: '/sessions', badge: null },
     { icon: Users, label: 'Clients', path: '/clients', badge: null },
     { icon: Calendar, label: 'Calendar', path: '/calendar', badge: null },
     { icon: CalendarCheck, label: 'Availability', path: '/availability', badge: null },
@@ -39,9 +40,8 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full z-50 transition-all duration-500 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${isCollapsed ? 'lg:w-20' : 'lg:w-72'} lg:translate-x-0 w-72`}
+        className={`fixed top-0 left-0 h-full z-50 transition-all duration-500 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          } ${isCollapsed ? 'lg:w-20' : 'lg:w-72'} lg:translate-x-0 w-72`}
         style={{
           backgroundColor: 'var(--color-bg-card)',
           borderRight: '1px solid var(--color-border-primary)',
@@ -88,9 +88,8 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
                 aria-label="Toggle sidebar"
               >
                 <ChevronLeft
-                  className={`w-5 h-5 transition-transform ${
-                    isCollapsed ? 'rotate-180' : ''
-                  }`}
+                  className={`w-5 h-5 transition-transform ${isCollapsed ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
             )}
@@ -110,9 +109,8 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
                         navigate(item.path);
                         onClose();
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                        isCollapsed ? 'justify-center' : ''
-                      }`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isCollapsed ? 'justify-center' : ''
+                        }`}
                       style={{
                         backgroundColor: active
                           ? 'var(--color-bg-secondary)'
@@ -162,11 +160,11 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
                 >
                   {user.name
                     ? user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2)
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)
                     : 'HT'}
                 </div>
                 <div className="flex-1 min-w-0">

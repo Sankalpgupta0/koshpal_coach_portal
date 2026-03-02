@@ -147,7 +147,8 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen"
+      style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 border-4 rounded-full border-t-transparent animate-spin" 
                style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}></div>

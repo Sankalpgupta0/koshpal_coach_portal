@@ -57,8 +57,10 @@ function Header({ onMenuClick, title }) {
           <Bell className="w-5 h-5" />
           {/* Notification badge - can be made dynamic */}
           <span
-            className="absolute flex items-center justify-center w-3 h-3 text-xs rounded-full -top-1 -right-1"
-            style={{ backgroundColor: 'var(--color-error)' }}
+            className="absolute w-[18px] h-[18px] px-2 py-[2px] flex items-center justify-center rounded-full font-semibold text-[10px] font-plusJakarta flex-shrink-0 -top-1 -right-1 "
+            style={{backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                  }}
           >
             3
           </span>

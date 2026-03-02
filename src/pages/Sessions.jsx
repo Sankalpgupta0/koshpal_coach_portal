@@ -486,7 +486,8 @@ export default function Sessions() {
                             </p>
                         </div>
 
-                        <div className="bg-white-darkest rounded-[12px] px-[20px] py-[20px]">
+                        <div className="rounded-[12px] px-[20px] py-[20px]" style=
+                        {{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
                             {/* Tabs */}
                             <div className="flex items-center gap-2 sm:gap-6 mb-6 min-h-[48px] w-full overflow-x-auto">
                                 {tabs.map((tab) => (

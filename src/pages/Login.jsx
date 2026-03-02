@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api';
+import { useToast } from '../components/ToastContainer';
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
 
   // Initialize dark mode from localStorage (default to light)
   useEffect(() => {
@@ -55,6 +59,7 @@ function Login() {
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
       }
+      showToast('Welcome back!', 'success');
       
       navigate('/');
     } catch (err) {

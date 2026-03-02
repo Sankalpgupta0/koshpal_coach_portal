@@ -5,11 +5,14 @@ import { getCoachProfile, updateCoachTimezone } from '../api/coach';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { useToast } from '../components/ToastContainer';
+
 
 export default function Settings() {
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { showToast } = useToast();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
@@ -98,6 +101,7 @@ export default function Settings() {
       }
     } catch (err) {
       console.error('Error loading profile:', err);
+      showToast('Failed to load profile data', 'error');
     } finally {
       setLoading(false);
     }
@@ -141,7 +145,7 @@ export default function Settings() {
   const handleSaveChanges = async () => {
       // Validation
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      // showToast('First name and last name are required', 'error');
+      showToast('First name and last name are required', 'error');
       return;
     }
     
@@ -172,11 +176,11 @@ export default function Settings() {
       }
       
       setOriginalData(formData);
-      // showToast('Changes saved successfully!', 'success');
+      showToast('Changes saved successfully!', 'success');
       console.log('Profile updated successfully');
     } catch (error) {
       console.error('Error saving changes:', error);
-      // showToast(error.response?.data?.message || 'Failed to save changes', 'error');
+      showToast(error.response?.data?.message || 'Failed to save changes', 'error');
     } finally {
       setSaving(false);
     }
@@ -203,6 +207,7 @@ export default function Settings() {
   const handleLogout = async () => {
     try {
       await logout();
+      showToast('Logged out successfully', 'success');
       navigate('/login');
     } catch (err) {
       console.error('Logout error:', err);
@@ -213,15 +218,17 @@ export default function Settings() {
     }
   };
 
+
   if (loading) {
     return (
-      <main className="flex items-center justify-center flex-1 p-4 overflow-y-auto sm:p-6 md:p-8">
+      <div className="flex items-center justify-center min-h-screen"
+      style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 border-4 rounded-full border-t-transparent animate-spin" 
                style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}></div>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Loading settings...</p>
+          <p style={{ color: 'var(--color-text-secondary)' }}>Loading dashboard...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -231,20 +238,21 @@ export default function Settings() {
 
   // Check file is image
   if (!file.type.startsWith('image/')) {
-    // setToast({ message: 'Please select an image file', type: 'error' });
+    showToast({ message: 'Please select an image file', type: 'error' });
     return;
   }
 
   // Size check (5MB)
   if (file.size > 5 * 1024 * 1024) {
-    // setToast({ message: 'Image size should be less than 5MB', type: 'error' });
+        showToast({ message: 'Image size should be less than 5MB', type: 'error' });
+
     return;
   }
 
   // Allowed formats
   const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
   if (!allowedTypes.includes(file.type)) {
-    // setToast({ message: 'Only JPG, PNG, JPEG allowed', type: 'error' });
+    showToast({ message: 'Only JPG, PNG, JPEG allowed', type: 'error' });
     return;
   }
 

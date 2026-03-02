@@ -12,10 +12,14 @@ import ClientOverview from './pages/ClientOverview'
 import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ThemeProvider } from './components/ThemeProvider'
+import { ToastProvider } from './components/ToastContainer';
+
 import './App.css'
 
 function App() {
   return (
+    <ToastProvider>
+    
     <ThemeProvider>
       <Router>
         <Routes>
@@ -90,6 +94,8 @@ function App() {
         </Routes>
       </Router>
     </ThemeProvider>
+    </ToastProvider>
+
   )
 }
 

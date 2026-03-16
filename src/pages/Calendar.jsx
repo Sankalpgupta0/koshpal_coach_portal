@@ -4,6 +4,27 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { getMyConsultations, getConsultationStats } from '../api';
 
+const TIME_SLOTS = [
+  '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM',
+  '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM',
+  '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
+];
+
+const getHourFromTimeSlot = (timeSlot) => {
+  const [hourText, meridiem] = timeSlot.split(' ');
+  let hour = Number(hourText);
+
+  if (meridiem === 'AM' && hour === 12) {
+    return 0;
+  }
+
+  if (meridiem === 'PM' && hour !== 12) {
+    return hour + 12;
+  }
+
+  return hour;
+};
+
 export default function Calendar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -51,8 +72,8 @@ export default function Calendar() {
         console.log("weekEnd", weekEnd);
         
         const weekConsultations = consultationsData.filter(consultation => {
-          const slotDate = new Date(consultation.date);
-          const isInWeek = slotDate >= currentWeekStart && slotDate < weekEnd;
+          const consultationStart = new Date(consultation.startTime || consultation.date);
+          const isInWeek = consultationStart >= currentWeekStart && consultationStart < weekEnd;
           return isInWeek;
         });
         
@@ -275,7 +296,7 @@ export default function Calendar() {
 
                   {/* Time Slots */}
                   <div className="relative">
-                    {[ '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM'].map((timeSlot, timeIndex) => (
+                    {TIME_SLOTS.map((timeSlot, timeIndex) => (
                       <div 
                         key={timeIndex}
                         className="grid grid-cols-8 border-b"
@@ -297,44 +318,13 @@ export default function Calendar() {
                           const cellDate = new Date(currentWeekStart);
                           cellDate.setDate(currentWeekStart.getDate() + dayIndex);
                           const isToday = cellDate.toDateString() === new Date().toDateString();
+                          const slotHour = getHourFromTimeSlot(timeSlot);
                           
                           // Find consultations for this day and time slot
                           const cellConsultations = consultations.filter(consultation => {
-                            const slotDate = new Date(consultation.date);
                             const startTime = new Date(consultation.startTime);
                             const consultationHour = startTime.getHours();
-                            
-                            // Map timeSlot to hour number
-                            let slotHour;
-                            switch (timeSlot) {
-                              // case '12 AM': slotHour = 0; break;
-                              // case '1 AM': slotHour = 1; break;
-                              // case '2 AM': slotHour = 2; break;
-                              // case '3 AM': slotHour = 3; break;
-                              // case '4 AM': slotHour = 4; break;
-                              // case '5 AM': slotHour = 5; break;
-                              // case '6 AM': slotHour = 6; break;
-                              // case '7 AM': slotHour = 7; break;
-                              // case '8 AM': slotHour = 8; break;
-                              case '9 AM': slotHour = 9; break;
-                              case '10 AM': slotHour = 10; break;
-                              case '11 AM': slotHour = 11; break;
-                              case '12 PM': slotHour = 12; break;
-                              case '1 PM': slotHour = 13; break;
-                              case '2 PM': slotHour = 14; break;
-                              case '3 PM': slotHour = 15; break;
-                              case '4 PM': slotHour = 16; break;
-                              case '5 PM': slotHour = 17; break;
-                              case '6 PM': slotHour = 18; break;
-                              case '7 PM': slotHour = 19; break;
-                              case '8 PM': slotHour = 20; break;
-                              case '9 PM': slotHour = 21; break;
-                              // case '10 PM': slotHour = 22; break;
-                              // case '11 PM': slotHour = 23; break;
-                              default: slotHour = -1;
-                            }
-                            
-                            const dateMatch = slotDate.toDateString() === cellDate.toDateString();
+                            const dateMatch = startTime.toDateString() === cellDate.toDateString();
                             const timeMatch = consultationHour === slotHour;
                             
                             return dateMatch && timeMatch;
@@ -351,13 +341,6 @@ export default function Calendar() {
                             >
                               {/* Consultations */}
                               {cellConsultations.map(consultation => {
-                                const startTime = new Date(consultation.startTime);
-                                const timeString = startTime.toLocaleTimeString('en-US', { 
-                                  hour: 'numeric', 
-                                  minute: '2-digit', 
-                                  hour12: true 
-                                });
-                                
                                 const statusColor = consultation.booking?.status === 'CONFIRMED' 
                                   ? { bg: 'var(--color-calendar-confirmed-bg)', border: 'var(--color-calendar-confirmed-border)', text: 'var(--color-calendar-confirmed-text)' }
                                   : consultation.booking?.status === 'COMPLETED'

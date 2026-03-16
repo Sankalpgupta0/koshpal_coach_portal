@@ -131,7 +131,7 @@ export default function Payments() {
           </p>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 text-sm transition-all rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}>
+        <button className="flex items-center gap-2 px-4 py-2 text-sm transition-all rounded-lg hover:opacity-90 text-white-darkest" style={{ backgroundColor: 'var(--color-primary)' }}>
           <FileText size={16} />
           Create Invoice
         </button>

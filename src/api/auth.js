@@ -10,9 +10,12 @@ export const login = async (email, password) => {
     password,
   });
 
-  // Store user data in localStorage (tokens are in httpOnly cookies)
+  // Store user data and access token in localStorage
   if (response.data.user) {
     localStorage.setItem('user', JSON.stringify(response.data.user));
+  }
+  if (response.data.accessToken) {
+    localStorage.setItem('token', response.data.accessToken);
   }
 
   return response.data;
@@ -28,6 +31,7 @@ export const logout = async () => {
   } finally {
     // Always clear local storage
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   }
 };
 

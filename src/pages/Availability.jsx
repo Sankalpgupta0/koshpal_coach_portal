@@ -561,7 +561,8 @@ export default function Availability() {
                     <div className="space-y-6 px-3 sm:px-4 sm:px-6 py-6 rounded-[16px] border" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
                       <div className="flex items-center justify-between">
                         <h4 className="text-h4" style={{ color: 'var(--color-text-primary)' }}>Weekly Schedule</h4>
-                        <div className="px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded">
+                        <div className="px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded"style=
+                        {{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
                           Times in IST (Indian Standard Time)
                         </div>
                       </div>
@@ -709,8 +710,8 @@ export default function Availability() {
                   <button
                     onClick={handlePublish}
                     disabled={publishing}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-outfit font-medium text-sm leading-5 tracking-normal hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-outfit font-medium text-sm leading-5 tracking-normal hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white-darkest"
+                    style={{ backgroundColor: 'var(--color-primary)'}}
                   >
                     {publishing ? (
                       <>

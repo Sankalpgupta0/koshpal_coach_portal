@@ -77,6 +77,7 @@ axiosInstance.interceptors.response.use(
 
       // Token refresh failed - clear storage and redirect
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
       window.location.href = '/login';
       return Promise.reject(error);
     }

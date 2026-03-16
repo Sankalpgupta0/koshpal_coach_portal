@@ -8,6 +8,7 @@ export const login = async (email, password) => {
   const response = await axiosInstance.post('/auth/login', {
     email,
     password,
+    role: 'COACH',
   });
 
   // Store user data and access token in localStorage

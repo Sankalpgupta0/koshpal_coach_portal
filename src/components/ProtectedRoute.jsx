@@ -1,41 +1,39 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { getCurrentUser, logout } from '../api/auth';
+import { logout } from '../api/auth';
+import { axiosInstance } from '../api/axiosInstance.mjs';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const userStr = localStorage.getItem('user');
 
   useEffect(() => {
     const checkAuth = async () => {
-      // First check localStorage for immediate response
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      if (storedUser && storedUser.id && storedUser.role === 'COACH') {
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
-      }
-      
-      // If no localStorage data, check with API
       try {
-        const user = await getCurrentUser();
-        // Check if user has COACH role
-        if (user.user && user.user.role === 'COACH') {
-          // Store user data in localStorage for future checks
-          localStorage.setItem('user', JSON.stringify(user.user));
-          setIsAuthenticated(true);
-        } else {
+        if (!userStr) {
           setIsAuthenticated(false);
+          return;
         }
+
+        const user = JSON.parse(userStr);
+
+        if (user.role !== 'COACH') {
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          setIsAuthenticated(false);
+          return;
+        }
+
+        await axiosInstance.get('/auth/me');
+        setIsAuthenticated(true);
       } catch (error) {
-        // If API call fails (401/403), user is not authenticated
-        // Clear any stale data
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
         
-        // If it's a 403 (Forbidden), also clear server-side cookies
         if (error.response?.status === 403) {
           try {
-            await logout(); // This will clear httpOnly cookies
+            await logout();
           } catch (logoutError) {
             console.log('Logout failed, but continuing with redirect');
           }
@@ -48,7 +46,7 @@ function ProtectedRoute({ children }) {
     };
 
     checkAuth();
-  }, []);
+  }, [userStr]);
 
   // Show loading while checking authentication
   if (isLoading) {

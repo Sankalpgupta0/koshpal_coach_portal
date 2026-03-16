@@ -4,6 +4,23 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../api';
 import { useToast } from '../components/ToastContainer';
 
+const normalizeUser = (userData) => {
+  if (!userData) {
+    return null;
+  }
+
+  const source = userData.user || userData;
+  const normalizedId = source.id || source.userId || source._id;
+
+  if (!normalizedId) {
+    return null;
+  }
+
+  return {
+    ...source,
+    id: normalizedId,
+  };
+};
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -31,9 +48,16 @@ function Login() {
 
   // Check if already logged in
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (storedUser && storedUser.id && storedUser.role === 'COACH') {
-      navigate('/');
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        if (userData.role === 'COACH') {
+          navigate('/dashboard', { replace: true });
+        }
+      } catch (error) {
+        localStorage.removeItem('user');
+      }
     }
   }, [navigate]);
 
@@ -47,13 +71,22 @@ function Login() {
         return;
       }
 
+      localStorage.removeItem('token');
+
       const response = await login(email, password);
+      const user = normalizeUser(response?.user || response);
       
       // Check if user has COACH role
-      if (response.user.role !== 'COACH') {
+      if (!user || user.role !== 'COACH') {
         setError('Access denied. This portal is for coaches only.');
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
         return;
+      }
+
+      localStorage.setItem('user', JSON.stringify(user));
+      if (!response?.accessToken) {
+        localStorage.removeItem('token');
       }
       
       if (rememberMe) {
@@ -61,7 +94,7 @@ function Login() {
       }
       showToast('Welcome back!', 'success');
       
-      navigate('/');
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');

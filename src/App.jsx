@@ -34,7 +34,7 @@ function App() {
           } />
 
           {/* Dashboard - Standalone */}
-          <Route path="/" element={
+          <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
@@ -89,7 +89,9 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* Catch all - redirect to login or dashboard */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* Catch all - redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

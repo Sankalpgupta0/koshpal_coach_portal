@@ -18,7 +18,7 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const menuItems = [
-    { icon: Home, label: 'Dashboard', path: '/', badge: null },
+    { icon: Home, label: 'Dashboard', path: '/dashboard', badge: null },
     { icon: BookOpen, label: 'Sessions', path: '/sessions', badge: null },
     { icon: Users, label: 'Clients', path: '/clients', badge: null },
     { icon: Calendar, label: 'Calendar', path: '/calendar', badge: null },

@@ -154,7 +154,7 @@ export default function Sessions() {
                 startTime: start.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
                 endTime: end.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
                 duration: `${Math.round((end - start) / (1000 * 60))} min`,
-                avatar: '', // Handled by initials helper
+                avatar: getInitials(c.booking?.employee?.fullName || 'Unknown'),
                 rating: c.rating || null,
                 topicsCovered: [], // Placeholder if not in API
                 meetingLink: c.booking?.meetingLink

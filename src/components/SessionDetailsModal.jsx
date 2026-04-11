@@ -9,6 +9,18 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
 
     if (!isOpen || !session) return null;
 
+    // Helper function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return '';
+        const names = name.trim().split(' ');
+        if (names.length === 1) {
+            return names[0].charAt(0).toUpperCase();
+        }
+        return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+    };
+
+    const initials = session.avatar || getInitials(session.clientName);
+
     const handleSaveSummary = () => {
         setIsEditingSummary(false);
         console.log('Summary saved:', summary);
@@ -36,15 +48,16 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                         <div className="flex items-center gap-4">
                             {/* Avatar */}
                             <div
-                                className="w-[56px] h-[56px] rounded-full flex items-center justify-center bg-[#EFF1F8] text-[#334EAC] font-['Plus_Jakarta_Sans'] text-[18px] leading-[28px] font-normal tracking-normal"
+                                className="w-[56px] h-[56px] rounded-full flex items-center justify-center font-jakarta text-[20px] leading-[28px] font-semibold tracking-normal"
+                                style={{ backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary-darkest)' }}
                             >
-                                {session.avatar}
+                                {initials}
                             </div>
                             <div>
-                                <h2 className="font-['Outfit'] text-[20px] leading-[28px] font-normal tracking-normal text-[#333333]">
+                                <h2 className="font-outfit text-[20px] leading-[28px] font-medium tracking-normal" style={{ color: 'var(--color-text-primary)' }}>
                                     {session.clientName}
                                 </h2>
-                                <p className="font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-normal tracking-[0.14px] text-[#808080]">
+                                <p className="font-jakarta text-[14px] leading-[20px] font-normal tracking-[0.14px]" style={{ color: 'var(--color-text-secondary)' }}>
                                     {session.role} • {session.company}
                                 </p>
                             </div>
@@ -67,15 +80,15 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                             {/* Scheduled */}
                             <div className='gap-3'>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center bg-[#F5F5F5]">
-                                        <Calendar className="w-4 h-4 text-[#808080]" />
+                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                                        <Calendar className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
                                     </div>
                                     <div>
-                                        <span className="text-label font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.12px] text-[#666666]">
+                                        <span className="text-label font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.12px]" style={{ color: 'var(--color-text-secondary)' }}>
                                             Scheduled
                                         </span>
-                                        <p className="text-body-md font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.14px] text-[#333333]">
-                                            Sunday, December 28, 2025 at 10:00 AM
+                                        <p className="text-body-md font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.14px]" style={{ color: 'var(--color-text-primary)' }}>
+                                            {session.startTime || 'Sunday, December 28, 2025 at 10:00 AM'}
                                         </p>
                                     </div>
                                 </div>
@@ -85,15 +98,16 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                             {/* Status */}
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center bg-[#F5F5F5]">
-                                        <CircleCheckBig className="w-4 h-4 text-[#808080]" />
+                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                                        <CircleCheckBig className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
                                     </div>
                                     <div>
-                                        <div className="text-label font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.12px] text-[#666666] mb-[3px]">
+                                        <div className="text-label font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.12px] mb-[3px]" style={{ color: 'var(--color-text-secondary)' }}>
                                             Status
                                         </div>
                                         <div
-                                            className="inline-block px-2 py-[2px] rounded-[14px] h-[22px] border border-[#348958] font-['Plus_Jakarta_Sans'] text-[12px] leading-[16px] font-medium tracking-normal text-[#348958]"
+                                            className="inline-block px-2 py-[2px] rounded-[14px] h-[22px] border font-jakarta text-[12px] leading-[16px] font-medium tracking-normal"
+                                            style={{ borderColor: 'var(--color-success)', color: 'var(--color-success)' }}
                                         >
                                             COMPLETED
                                         </div>
@@ -105,14 +119,14 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                             {/* Duration */}
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center bg-[#F5F5F5]">
-                                        <Clock className="w-4 h-4 text-[#808080]" />
+                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                                        <Clock className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
                                     </div>
                                     <div>
-                                        <span className="text-label font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.12px] text-[#666666]">
+                                        <span className="text-label font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.12px]" style={{ color: 'var(--color-text-secondary)' }}>
                                             Duration
                                         </span>
-                                        <p className="text-body-md font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.14px] text-[#333333]">
+                                        <p className="text-body-md font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.14px]" style={{ color: 'var(--color-text-primary)' }}>
                                             {session.duration || '45m'}
                                         </p>
                                     </div>
@@ -123,14 +137,14 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                             {/* Client Rating */}
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center bg-[#F5F5F5]">
+                                    <div className="h-[32px] w-[32px] rounded-[12px] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                                         <Star className="w-4 h-4 fill-current text-[#EB8A14]" />
                                     </div>
                                     <div>
-                                        <span className="text-label font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.12px] text-[#666666]">
+                                        <span className="text-label font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.12px]" style={{ color: 'var(--color-text-secondary)' }}>
                                             Client Rating
                                         </span>
-                                        <p className="text-body-md font-['Plus_Jakarta_Sans'] text-[14px] leading-[20px] font-medium tracking-[0.14px] text-[#333333]">
+                                        <p className="text-body-md font-jakarta text-[14px] leading-[20px] font-medium tracking-[0.14px]" style={{ color: 'var(--color-text-primary)' }}>
                                             {session.rating}/5.0
                                         </p>
                                     </div>
@@ -142,7 +156,7 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
 
                     {/* Topics Covered */}
                     <div className="space-y-2">
-                        <h3 className="font-jakarta text-sm leading-6 font-semibold text-black-light">
+                        <h3 className="font-jakarta text-sm leading-6 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                             Topics Covered
                         </h3>
                         <div className="flex flex-wrap gap-2">
@@ -150,13 +164,14 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                                 session.topicsCovered.map((topic, index) => (
                                     <span
                                         key={index}
-                                        className="px-3 py-1.5 rounded-full px-2 py-1 rounded-[22px] border-[1px] border-[#334EAC] font-jakarta text-xs leading-4 font-medium text-primary-primary"
+                                        className="px-3 py-1.5 rounded-full border font-jakarta text-xs leading-4 font-medium"
+                                        style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)', backgroundColor: 'var(--color-primary-lightest)' }}
                                     >
                                         {topic}
                                     </span>
                                 ))
                             ) : (
-                                <span className="text-body-sm text-[#808080]">No topics covered</span>
+                                <span className="text-body-sm font-jakarta" style={{ color: 'var(--color-text-secondary)' }}>No topics covered</span>
                             )}
                         </div>
                     </div>
@@ -164,13 +179,16 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                     {/* Summary */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-jakarta text-sm leading-6 font-semibold text-black-light">
+                            <h3 className="font-jakarta text-sm leading-6 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                                 Summary
                             </h3>
                             {!isEditingSummary && (
                                 <button
                                     onClick={() => setIsEditingSummary(true)}
-                                    className="px-3 h-[32px] rounded-[10px] border border-[#E0E0E0] text-body-md  text-[#333333] font-plusJakarta font-normal text-[14px] tracking-[0px] bg-[#FAFAFA]"
+                                    className="px-3 h-[32px] rounded-[10px] border text-body-md font-jakarta font-normal text-[14px] tracking-[0px] transition-colors"
+                                    style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border-primary)', color: 'var(--color-text-primary)' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)'}
                                 >
                                     Edit
                                 </button>
@@ -182,7 +200,8 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                                     value={summary}
                                     onChange={(e) => setSummary(e.target.value)}
                                     rows={3}
-                                    className="w-full px-3 py-[10px] rounded-[6px] border text-body-md transition-all focus:outline-none focus:ring-2 resize-none bg-[#F3F3F5]"
+                                    className="w-full px-3 py-[10px] rounded-[6px] border text-body-md transition-all focus:outline-none focus:ring-2 resize-none"
+                                    style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border-primary)', color: 'var(--color-text-primary)' }}
                                 />
                                 <div className="flex gap-2 justify-end">
                                     <button
@@ -222,13 +241,15 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
 
                     {/* Client Feedback */}
                     <div className="space-y-2">
-                        <h3 className="font-jakarta text-sm leading-6 font-semibold text-black-light">
+                        <h3 className="font-jakarta text-sm leading-6 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                             Client Feedback
                         </h3>
                         <div
-                            className="p-4 border border-[#EAEAEA] rounded-[12px] space-y-3">
+                            className="p-4 border rounded-[12px] space-y-3"
+                            style={{ borderColor: 'var(--color-border-primary)', backgroundColor: 'var(--color-bg-secondary)' }}
+                        >
                             <div className="flex items-center gap-1">
-                                <span className="font-jakarta text-sm leading-[21px] font-medium tracking-normal text-[#334EAC]">
+                                <span className="font-jakarta text-sm leading-[21px] font-medium tracking-normal" style={{ color: 'var(--color-primary)' }}>
                                     Rating:
                                 </span>
                                 <div className="flex items-center gap-0.5 ml-1">
@@ -236,12 +257,12 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                                         <Star
                                             key={star}
                                             className="w-4 h-4 fill-current"
-                                            style={{ color: star <= session.rating ? '#f59e0b' : '#d1d5db' }}
+                                            style={{ color: star <= session.rating ? '#f59e0b' : 'var(--color-border-secondary)' }}
                                         />
                                     ))}
                                 </div>
                             </div>
-                            <p className="font-jakarta text-sm leading-[21px] font-normal tracking-normal text-grey-darkest">
+                            <p className="font-jakarta text-sm leading-[21px] font-normal tracking-normal italic" style={{ color: 'var(--color-text-secondary)' }}>
                                 "Excellent session! Really helped me understand my leadership blind spots. The practical frameworks were immediately actionable."
                             </p>
                         </div>
@@ -250,13 +271,17 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                     {/* Coach Notes */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-jakarta text-sm leading-6 font-semibold text-black-light">
+                            <h3 className="font-jakarta text-sm leading-6 font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                                 Coach Notes
                             </h3>
                             {!isEditingNotes && (
                                 <button
                                     onClick={() => setIsEditingNotes(true)}
-                                    className="px-3 h-[32px] rounded-[10px] border border-[#E0E0E0] text-body-md  text-[#333333] font-plusJakarta font-normal text-[14px] tracking-[0px] bg-[#FAFAFA]">
+                                    className="px-3 h-[32px] rounded-[10px] border text-body-md font-jakarta font-normal text-[14px] tracking-[0px] transition-colors"
+                                    style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border-primary)', color: 'var(--color-text-primary)' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)'}
+                                >
                                     Edit notes
                                 </button>
                             )}
@@ -267,7 +292,7 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                                     value={coachNotes}
                                     onChange={(e) => setCoachNotes(e.target.value)}
                                     rows={3}
-                                    className="w-full px-3 py-[10px] pb-[23px] bg-[#F3F3F5] rounded-lg border text-body-md transition-all focus:outline-none focus:ring-2 resize-none"
+                                    className="w-full px-3 py-[10px] pb-[23px] rounded-lg border text-body-md transition-all focus:outline-none focus:ring-2 resize-none"
                                     style={{
                                         backgroundColor: 'var(--color-input-bg)',
                                         borderColor: 'var(--color-border-secondary)',
@@ -318,13 +343,19 @@ export default function SessionDetailsModal({ isOpen, onClose, session }) {
                 >
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded-lg text-body-md font-medium border border-[#E0E0E0] rounded-[10px] h-[36px] order-2 sm:order-1"
+                        className="px-4 py-2 text-body-md font-medium border rounded-[10px] h-[36px] order-2 sm:order-1 transition-colors"
+                        style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border-primary)', color: 'var(--color-text-primary)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)'}
                     >
                         Close
                     </button>
 
                     <button
-                        className="flex items-center justify-center gap-2 px-4 py-2 border-[#E0E0E0] rounded-[10px] border text-body-md font-medium transition-all hover:opacity-80 bg-[#FAFAFA] order-1 sm:order-2"
+                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-[10px] border text-body-md font-medium transition-all hover:opacity-80 order-1 sm:order-2"
+                        style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)', color: 'var(--color-text-primary)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-card)'}
                     >
                         <MessageSquare className="w-4 h-4" />
                         <span>Message</span>

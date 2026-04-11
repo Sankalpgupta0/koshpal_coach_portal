@@ -25,6 +25,26 @@ const getHourFromTimeSlot = (timeSlot) => {
   return hour;
 };
 
+const formatHeaderDateRange = (startDate) => {
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 6);
+
+  const startMonth = startDate.toLocaleString('en-US', { month: 'long' });
+  const endMonth = endDate.toLocaleString('en-US', { month: 'long' });
+  const startYear = startDate.getFullYear();
+  const endYear = endDate.getFullYear();
+
+  if (startYear !== endYear) {
+    return `${startDate.toLocaleString('en-US', { month: 'short' })} ${startYear} – ${endDate.toLocaleString('en-US', { month: 'short' })} ${endYear}`;
+  }
+
+  if (startMonth !== endMonth) {
+    return `${startDate.toLocaleString('en-US', { month: 'short' })} – ${endDate.toLocaleString('en-US', { month: 'short' })} ${startYear}`;
+  }
+
+  return `${startMonth} ${startYear}`;
+};
+
 export default function Calendar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -217,48 +237,60 @@ export default function Calendar() {
                 className="flex items-center justify-between px-4 py-3 border-b"
                 style={{ borderColor: 'var(--color-border-primary)' }}
               >
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const newWeekStart = new Date(currentWeekStart);
-                      newWeekStart.setDate(currentWeekStart.getDate() - 7);
-                      setCurrentWeekStart(newWeekStart);
-                    }}
-                    className="p-1.5 rounded hover:bg-opacity-80 transition-colors"
-                    style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
-                  >
-                    <ChevronLeft className="w-4 h-4" style={{ color: 'var(--color-text-primary)' }} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const today = new Date();
-                      const dayOfWeek = today.getDay();
-                      // Adjust for Monday as start of week (Monday = 1, Sunday = 0, so Sunday becomes 7)
-                      const adjustedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
-                      const startOfWeek = new Date(today);
-                      startOfWeek.setDate(today.getDate() - adjustedDayOfWeek + 1); // +1 to start on Monday
-                      startOfWeek.setHours(0, 0, 0, 0);
-                      setCurrentWeekStart(startOfWeek);
-                    }}
-                    className="px-3 py-1.5 rounded text-sm font-medium"
-                    style={{ 
-                      backgroundColor: 'var(--color-bg-tertiary)',
-                      color: 'var(--color-text-primary)'
-                    }}
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() => {
-                      const newWeekStart = new Date(currentWeekStart);
-                      newWeekStart.setDate(currentWeekStart.getDate() + 7);
-                      setCurrentWeekStart(newWeekStart);
-                    }}
-                    className="p-1.5 rounded hover:bg-opacity-80 transition-colors"
-                    style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
-                  >
-                    <ChevronRight className="w-4 h-4" style={{ color: 'var(--color-text-primary)' }} />
-                  </button>
+                <div className="flex items-center gap-6">
+                  {/* Left Side: Navigation Controls */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        const dayOfWeek = today.getDay();
+                        // Adjust for Monday as start of week
+                        const adjustedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+                        const startOfWeek = new Date(today);
+                        startOfWeek.setDate(today.getDate() - adjustedDayOfWeek + 1);
+                        startOfWeek.setHours(0, 0, 0, 0);
+                        setCurrentWeekStart(startOfWeek);
+                      }}
+                      className="px-6 py-2 rounded-full border text-sm font-semibold transition-all hover:bg-opacity-10 hover:bg-black"
+                      style={{ 
+                        borderColor: 'var(--color-border-primary)',
+                        color: 'var(--color-text-primary)',
+                        backgroundColor: 'var(--color-bg-card)'
+                      }}
+                    >
+                      Today
+                    </button>
+                    
+                    <div className="flex items-center gap-1 ml-2">
+                      <button
+                        onClick={() => {
+                          const newWeekStart = new Date(currentWeekStart);
+                          newWeekStart.setDate(currentWeekStart.getDate() - 7);
+                          setCurrentWeekStart(newWeekStart);
+                        }}
+                        className="p-2 transition-colors"
+                      >
+                        <ChevronLeft className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const newWeekStart = new Date(currentWeekStart);
+                          newWeekStart.setDate(currentWeekStart.getDate() + 7);
+                          setCurrentWeekStart(newWeekStart);
+                        }}
+                        className="p-2 transition-colors"
+                      >
+                        <ChevronRight className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+                      </button>
+                    </div>
+
+                    <h2 
+                      className="ml-4 text-2xl font-semibold font-outfit" 
+                      style={{ color: 'var(--color-primary)' }}
+                    >
+                      {formatHeaderDateRange(currentWeekStart)}
+                    </h2>
+                  </div>
                 </div>
               </div>
 

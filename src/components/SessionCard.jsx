@@ -1,8 +1,14 @@
 import React from 'react';
 import { Video, Clock } from 'lucide-react';
 export default function SessionCard({ startTime, endTime, clientName, sessionType, badge, isVirtual, duration, onJoinSession, onReschedule }) {
-  // Extract AM/PM from startTime
-  const period = startTime.includes('AM') ? 'AM' : 'PM';
+  // Extract initials from clientName
+  const initials = (() => {
+    const parts = clientName?.trim().split(/\s+/) || [];
+    if (parts.length === 0) return '';
+    const first = parts[0][0];
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+    return (first + last).toUpperCase();
+  })();
   
   // Determine badge styling based on status
   const getBadgeStyle = () => {
@@ -15,11 +21,11 @@ export default function SessionCard({ startTime, endTime, clientName, sessionTyp
   return (
     <div className="rounded-[10px] py-3 sm:py-[14px] px-3 sm:px-[17px] border hover:shadow-md transition-shadow" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-primary)' }}>
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-        {/* AM/PM Badge - Center on mobile, left on desktop */}
+        {/* Initials Badge - Center on mobile, left on desktop */}
         <div className="flex sm:hidden flex-col items-center">
           <div className="rounded-full flex items-center w-10 h-10" style={{ backgroundColor: 'var(--color-primary-lightest)' }}>
             <span className="rounded-full w-10 h-10 flex items-center justify-center text-xs font-jakarta font-600" style={{ backgroundColor: 'var(--color-primary-lightest)', color: 'var(--color-primary)' }}>
-              {period}
+              {initials}
             </span>
           </div>
           {/* Time - Horizontal below circle on mobile */}
@@ -37,10 +43,10 @@ export default function SessionCard({ startTime, endTime, clientName, sessionTyp
           <div className="font-jakarta font-500 text-sm" style={{ color: 'var(--color-text-secondary)' }}>{endTime}</div>
         </div>
 
-        {/* Desktop AM/PM Badge */}
+        {/* Desktop Initials Badge */}
         <div className="hidden sm:flex rounded-full flex items-start w-10 h-10" style={{ backgroundColor: 'var(--color-primary-lightest)' }}>
           <span className="rounded-full w-10 h-10 flex items-center justify-center text-xs font-jakarta font-600" style={{ backgroundColor: 'var(--color-primary-lightest)', color: 'var(--color-primary)' }}>
-            {period}
+            {initials}
           </span>
         </div>
 

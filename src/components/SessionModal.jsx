@@ -13,16 +13,22 @@ export default function SessionModal({ session, isOpen, onClose }) {
 
   if (!isOpen || !session || !mounted) return null;
 
-  // Extract AM/PM from startTime
-  const period = session.startTime.includes('AM') ? 'AM' : 'PM';
+  // Extract initials from clientName
+  const initials = (() => {
+    const parts = session.clientName?.trim().split(/\s+/) || [];
+    if (parts.length === 0) return '';
+    const first = parts[0][0];
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+    return (first + last).toUpperCase();
+  })();
   
   // Determine badge styling based on status
   const badgeClass = session.badge === 'Confirmed' 
     ? 'bg-[var(--color-info-bg)] text-[var(--color-secondary)]' 
     : 'bg-grey-lightest text-grey-dark';
 
-  // Generate meeting link (in real app, this would come from the session data)
-  const meetingLink = 'https://meet.google.com/abc-defg-hij';
+  // Use meeting link from session data
+  const meetingLink = session.meetingLink || 'https://meet.google.com/abc-defg-hij';
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(meetingLink);
@@ -48,8 +54,8 @@ export default function SessionModal({ session, isOpen, onClose }) {
         <div className="flex items-start justify-between p-4 sm:p-6 ">
           <div className="flex items-start gap-3 flex-1 h-[44px]">
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-jakarta font-normal text-base leading-6 flex-shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-primary)' }}>
-              {period}
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-jakarta font-600 text-sm flex-shrink-0" style={{ backgroundColor: 'var(--color-primary-lightest)', color: 'var(--color-primary)' }}>
+              {initials}
             </div>
             
             {/* Name and Session Type */}

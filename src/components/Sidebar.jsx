@@ -24,7 +24,7 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
     { icon: Calendar, label: 'Calendar', path: '/calendar', badge: null },
     { icon: CalendarCheck, label: 'Availability', path: '/availability', badge: null },
     { icon: DollarSign, label: 'Payments', path: '/payments', badge: null },
-    { icon: Settings, label: 'Settings', path: '/settings', badge: null },
+    // { icon: Settings, label: 'Settings', path: '/settings', badge: null },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -151,7 +151,7 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
           {!isCollapsed && (
             <div className="p-4 border-t" style={{ borderColor: 'var(--color-border-primary)' }}>
               {/* User Profile */}
-              <div className="flex items-center gap-3 p-3 rounded-lg hover:opacity-80 cursor-pointer transition-all" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+              {/* <div className="flex items-center gap-3 p-3 rounded-lg hover:opacity-80 cursor-pointer transition-all" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"
                   style={{
@@ -182,7 +182,7 @@ function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
                     View Profile
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
         </div>

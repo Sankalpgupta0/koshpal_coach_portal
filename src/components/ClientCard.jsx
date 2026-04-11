@@ -14,29 +14,36 @@ export default function ClientCard({ client }) {
       <div className="flex justify-between items-start ">
         <div className="flex gap-3 sm:gap-4">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-jakarta font-normal text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] tracking-[0px]" style={{ backgroundColor: 'var(--color-primary-lightest)', color: 'var(--color-primary)' }}>
-            RK
+            {(() => {
+              const parts = client.name?.trim().split(/\s+/) || [];
+              if (parts.length === 0) return '';
+              const first = parts[0][0];
+              const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+              return (first + last).toUpperCase();
+            })()}
           </div>
 
           <div className="space-y-2">
             <p className="font-outfit font-medium text-[15px] sm:text-[17px] leading-[20px] sm:leading-[22.1px] tracking-normal" style={{ color: 'var(--color-text-primary)' }}>{client.name}</p>
 
             <div className="space-y-1">
-                <div className="flex items-center gap-1 font-jakarta font-normal text-[11px] leading-[16.5px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
-              <TrendingUp size={12} style={{ color: 'var(--color-primary)' }} />
-              {client.role}
-            </div>
+              <div className="flex items-center gap-1 font-jakarta font-normal text-[11px] leading-[16.5px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
+                <TrendingUp size={12} style={{ color: 'var(--color-primary)' }} />
+                {client.company}
 
-            <div className="flex items-center gap-1 font-jakarta font-normal text-[11px] leading-[16.5px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
+              </div>
+
+              {/* <div className="flex items-center gap-1 font-jakarta font-normal text-[11px] leading-[16.5px] tracking-normal" style={{ color: 'var(--color-text-secondary)' }}>
               <MapPin size={12} style={{ color: 'var(--color-primary)' }} />
               {client.location}
-            </div>
+            </div> */}
             </div>
           </div>
         </div>
 
-        <span className="px-2 py-1 rounded-[6px] font-jakarta font-semibold text-[9px] sm:text-[10px] tracking-normal" style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-inverse)' }}>
+        {/* <span className="px-2 py-1 rounded-[6px] font-jakarta font-semibold text-[9px] sm:text-[10px] tracking-normal" style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-inverse)' }}>
           {client.plan}
-        </span>
+        </span> */}
       </div>
 
       {/* Sessions */}
@@ -61,7 +68,7 @@ export default function ClientCard({ client }) {
           Message
         </button>
 
-        <button 
+        <button
           onClick={handleViewDetails}
           className="flex-1 rounded-lg py-2 text-xs sm:text-sm hover:opacity-90 transition-all" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
         >

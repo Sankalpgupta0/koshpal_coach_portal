@@ -197,7 +197,13 @@ export default function ClientOverview() {
               {/* Client Avatar */}
               <div className="flex items-center justify-center flex-shrink-0 rounded-full w-14 h-14 sm:w-16 sm:h-16" style={{ backgroundColor: 'var(--color-primary-light)' }}>
                 <span className="font-outfit font-medium text-xl sm:text-[24px]" style={{ color: 'var(--color-primary)' }}>
-                  {clientData.name.split(' ').map(n => n[0]).join('')}
+                  {(() => {
+                    const parts = clientData.name?.trim().split(/\s+/) || [];
+                    if (parts.length === 0) return '';
+                    const first = parts[0][0];
+                    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+                    return (first + last).toUpperCase();
+                  })()}
                 </span>
               </div>
               

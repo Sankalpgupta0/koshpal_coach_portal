@@ -64,7 +64,7 @@ export default function Clients() {
             // location: consultation.booking.employee.profile?.department || 'N/A',
             lastSession: lastSession ? formatDate(lastSession.date) : 'N/A',
             nextSession: nextSession ? formatDate(nextSession.date) : 'N/A',
-            // plan: consultation.booking.employee.company?.name || 'N/A',
+            company: consultation.booking.employee.company || 'N/A',
           });
         }
       });
@@ -244,7 +244,7 @@ export default function Clients() {
                       ringColor: 'var(--color-primary)'
                     }}
                   >
-                    Upcoming Sessions
+                    Current client
                   </button>
                   <button
                     onClick={() => setStatusFilter('completed')}
@@ -257,7 +257,7 @@ export default function Clients() {
                       ringColor: 'var(--color-primary)'
                     }}
                   >
-                    Completed
+                    Past client
                   </button>
                 </div>
               </div>
